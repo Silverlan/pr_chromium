@@ -2,38 +2,127 @@
 #include "lchromium.hpp"
 #include "wiweb.hpp"
 #include "util_javascript.hpp"
-#include "browser_process.hpp"
-#include "browser_render_process_handler.hpp"
-#include <include/cef_app.h>
-#include <include/cef_client.h>
-#include <include/cef_render_handler.h>
-#include <include/views/cef_browser_view.h>
-#include <prosper_texture.hpp>
+#include "chromium_wrapper.hpp"
+#include <image/prosper_texture.hpp>
 #include <fsys/filesystem.h>
 #include <iostream>
-#include <pragma_module.hpp>
+#include <pragma/pragma_module.hpp>
+#include <pragma/util/util_module.hpp>
 
-#pragma comment(lib,"prosper.lib")
-#pragma comment(lib,"anvil.lib")
-#pragma comment(lib,"vulkan-1.lib")
-
-#pragma comment(lib,"libcef.lib")
-#pragma comment(lib,"libcef_dll_wrapper.lib")
-#pragma comment(lib,"mathutil.lib")
-#pragma comment(lib,"sharedutils.lib")
-#pragma comment(lib,"vfilesystem.lib")
-#pragma comment(lib,"wgui.lib")
-#pragma comment(lib,"client.lib")
-#pragma comment(lib,"luasystem.lib")
-#pragma comment(lib,"lua51.lib")
-#pragma comment(lib,"luabind.lib")
-#pragma comment(lib,"iclient.lib")
-#pragma comment(lib,"glfw.lib")
-
-namespace pragma
+#define PR_CHROMIUM_FIND_SYMBOL(lib,sym) \
+	(sym = lib.FindSymbolAddress<decltype(sym)>("pr_chromium_" #sym)) != nullptr
+cef::IChromiumWrapper::IChromiumWrapper(util::Library &lib)
 {
-	std::vector<JavaScriptFunction> globalJavaScriptFunctions;
+	m_bValid = 
+		PR_CHROMIUM_FIND_SYMBOL(lib,register_javascript_function) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,initialize) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,close) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,do_message_loop_work) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,render_handler_create) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,render_handler_release) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,render_handler_set_user_data) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,render_handler_get_user_data) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_client_create) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_client_release) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_client_set_user_data) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_client_get_user_data) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_client_set_download_complete_callback) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_client_set_download_location) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_create) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_release) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_get_user_data) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,render_handler_set_data_ptr) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_load_url) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_can_go_back) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_can_go_forward) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_go_back) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_go_forward) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_has_document) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_is_loading) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_reload) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_reload_ignore_cache) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_stop_load) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_copy) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_cut) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_delete) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_paste) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_redo) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_select_all) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_undo) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_set_zoom_level) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_get_zoom_level) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_send_event_mouse_move) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_send_event_mouse_click) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_send_event_key) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_send_event_char) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_send_event_mouse_wheel) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_set_focus) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_execute_java_script);
+}
+
+static std::optional<bool> initResult = {};
+static std::shared_ptr<util::Library> g_libChromiumWrapper = nullptr;
+std::unique_ptr<cef::IChromiumWrapper> g_chromiumWrapper = nullptr;
+cef::IChromiumWrapper &cef::get_wrapper() {return *g_chromiumWrapper;}
+static bool initialize_chromium(std::string &outErr)
+{
+	if(initResult.has_value())
+		return *initResult;
+	initResult = false;
+	std::string err;
+	auto lib = util::load_library_module("chromium/pr_chromium_wrapper",{},{},&err);
+	if(!lib)
+	{
+		outErr = std::move(err);
+		return false;
+	}
+	g_libChromiumWrapper = lib;
+	g_chromiumWrapper = std::make_unique<cef::IChromiumWrapper>(*lib);
+	if(!g_chromiumWrapper->valid())
+	{
+		outErr = "Unable to initialize chromium wrapper: One or more symbols not found!";
+		return false;
+	}
+	if(!g_chromiumWrapper->initialize())
+	{
+		g_chromiumWrapper = nullptr;
+		outErr = "Unable to initialize chromium wrapper: Failed to initialize chromium!";
+		return false;
+	}
+	initResult = true;
+	return true;
+}
+static void release_chromium()
+{
+	if(!initResult.has_value() || *initResult == false)
+		return;
+	g_chromiumWrapper->close();
+	g_chromiumWrapper = nullptr;
+	initResult = {};
+
+	g_libChromiumWrapper = nullptr;
+}
+extern "C"
+{
+	bool PRAGMA_EXPORT pragma_attach(std::string &outErr)
+	{
+		return initialize_chromium(outErr);
+	}
+	void PRAGMA_EXPORT pragma_detach()
+	{
+		release_chromium();
+	}
+	void PRAGMA_EXPORT pragma_initialize_lua(Lua::Interface &l)
+	{
+		Lua::chromium::register_library(l);
+		WIWeb::register_callbacks();
+
+		// GUI classes have to be registered for the client-state AND the GUI-state,
+		// so we have to tell the engine that we need to be registered for both whenever we're loaded.
+		iclient::load_as_gui_module();
+	}
 };
+
 extern "C" {
 
 PRAGMA_EXPORT void wv_chromium_load_url(WIBase *p,const std::string &url)
@@ -60,12 +149,9 @@ PRAGMA_EXPORT void wv_chromium_set_transparent_background(WIBase *p,bool b)
 	pWeb->SetTransparentBackground(b);
 }
 
-PRAGMA_EXPORT void wv_chromium_register_javascript_function(const std::string &name,const std::function<std::unique_ptr<pragma::JSValue>(const std::vector<pragma::JSValue>&)> &fCallback)
+PRAGMA_EXPORT void wv_chromium_register_javascript_function(const char *name,cef::JSValue*(* const fCallback)(cef::JSValue*,uint32_t))
 {
-	pragma::globalJavaScriptFunctions.push_back({});
-	auto &jsf = pragma::globalJavaScriptFunctions.back();
-	jsf.name = name;
-	jsf.callback = fCallback;
+	cef::get_wrapper().register_javascript_function(name,fCallback);
 }
 
 PRAGMA_EXPORT void wv_chromium_exec_javascript(WIBase *p,const std::string &js)
@@ -76,24 +162,9 @@ PRAGMA_EXPORT void wv_chromium_exec_javascript(WIBase *p,const std::string &js)
 	auto *browser = pWeb->GetBrowser();
 	if(browser == nullptr)
 		return;
-	auto frame = browser->GetMainFrame();
-	if(frame == nullptr)
-		return;
-	frame->ExecuteJavaScript(js,frame->GetURL(),0);
+	cef::get_wrapper().browser_execute_java_script(browser,js.c_str(),nullptr);
 }
 
-};
-
-extern "C"
-{
-	void PRAGMA_EXPORT pragma_initialize_lua(Lua::Interface &l)
-	{
-		Lua::chromium::register_library(l);
-
-		// GUI classes have to be registered for the client-state AND the GUI-state,
-		// so we have to tell the engine that we need to be registered for both whenever we're loaded.
-		iclient::load_as_gui_module();
-	}
 };
 
 #if 0

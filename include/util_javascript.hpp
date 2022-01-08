@@ -6,7 +6,7 @@
 #include <vector>
 #include <memory>
 
-namespace pragma
+namespace cef
 {
 	enum class JSValueType : uint32_t
 	{
@@ -25,13 +25,7 @@ namespace pragma
 	struct JSValue
 	{
 		JSValueType type;
-		std::shared_ptr<void> data = nullptr;
-	};
-
-	struct JavaScriptFunction
-	{
-		std::string name;
-		std::function<std::unique_ptr<JSValue>(const std::vector<JSValue>&)> callback = nullptr;
+		void *data = nullptr;
 	};
 };
 
