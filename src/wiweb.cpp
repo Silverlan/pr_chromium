@@ -15,11 +15,11 @@ void WIWeb::register_callbacks()
 	Lua::gui::register_lua_callback("wiweb","OnDownloadComplete",
 		[](WIBase &el,lua_State *l,const std::function<void(const std::function<void()>&)> &callLuaFunc)
 		-> CallbackHandle {
-		return el.AddCallback("OnDownloadComplete",FunctionCallback<void,util::Path>::Create([l,callLuaFunc](util::Path path) {
+		return FunctionCallback<void,util::Path>::Create([l,callLuaFunc](util::Path path) {
 			callLuaFunc([l,&path]() {
 				Lua::Push(l,path);
 			});
-		}));
+		});
 	});
 }
 WIWeb::WIWeb()
@@ -30,7 +30,7 @@ WIWeb::WIWeb()
 
 WIWeb::~WIWeb()
 {
-
+	ClearTexture();
 }
 
 void WIWeb::Initialize()
@@ -55,7 +55,7 @@ void WIWeb::ClearTexture()
 	if(m_imgDataPtr)
 	{
 		if(m_webRenderer)
-			cef::get_wrapper().render_handler_set_data_ptr(m_webRenderer.get(),nullptr);
+			cef::get_wrapper().render_handler_set_image_data(m_webRenderer.get(),nullptr,0,0);
 		m_texture->GetImage().Unmap();
 		m_imgDataPtr = nullptr;
 	}
@@ -66,13 +66,14 @@ void WIWeb::DoUpdate()
 {
 	WITexturedRect::DoUpdate();
 	InitializeChromiumBrowser();
+	Resize();
 }
 
 void WIWeb::SetTransparentBackground(bool b) {m_bTransparentBackground = b;}
 
 void WIWeb::SetInitialUrl(std::string url) {m_initialUrl = std::move(url);}
 
-bool WIWeb::InitializeChromiumBrowser()
+bool WIWeb::Resize()
 {
 	ClearTexture();
 
@@ -96,6 +97,17 @@ bool WIWeb::InitializeChromiumBrowser()
 		return false;
 	SetTexture(*m_texture);
 
+	img->Map(0ull,img->GetSize(),&m_imgDataPtr);
+	cef::get_wrapper().render_handler_set_image_data(m_webRenderer.get(),m_imgDataPtr,img->GetWidth(),img->GetHeight());
+	cef::get_wrapper().browser_was_resized(GetBrowser());
+	return true;
+}
+
+bool WIWeb::InitializeChromiumBrowser()
+{
+	if(m_browserInitialized)
+		return true;
+	m_browserInitialized = true;
 	auto renderHandler = cef::get_wrapper().render_handler_create([](cef::CWebRenderHandler *renderHandler,int &x,int &y,int &w,int &h) {
 		auto &context = WGUI::GetInstance().GetContext();
 		auto &window = context.GetWindow();
@@ -104,12 +116,11 @@ bool WIWeb::InitializeChromiumBrowser()
 		x = windowPos.x;
 		y = windowPos.y;
 		w = windowSize.x;
-		h = windowSize.x;
+		h = windowSize.y;
 	},[](cef::CWebRenderHandler *renderHandler,int &x,int &y,int &w,int &h) {
 		auto *el = static_cast<WIWeb*>(cef::get_wrapper().render_handler_get_user_data(renderHandler));
-		auto extents = el->m_texture->GetImage().GetExtents();
-		w = extents.width;
-		h = extents.height;
+		w = el->GetWidth();
+		h = el->GetHeight();
 
 		auto &context = WGUI::GetInstance().GetContext();
 		auto &window = context.GetWindow();
@@ -138,9 +149,6 @@ bool WIWeb::InitializeChromiumBrowser()
 		cef::get_wrapper().render_handler_release(renderHandler);
 	}};
 	cef::get_wrapper().render_handler_set_user_data(m_webRenderer.get(),this);
-
-	img->Map(0ull,img->GetSize(),&m_imgDataPtr);
-	cef::get_wrapper().render_handler_set_data_ptr(m_webRenderer.get(),m_imgDataPtr);
 
 	auto hWindow = GetActiveWindow();
 	// TODO: Apply m_bTransparentBackground ?
@@ -684,7 +692,7 @@ util::EventReply WIWeb::ScrollCallback(Vector2 offset)
 	if(browser == nullptr)
 		return util::EventReply::Unhandled;
 	auto brMousePos = GetBrowserMousePos();
-	cef::get_wrapper().browser_send_event_mouse_wheel(browser,brMousePos.x,brMousePos.y,offset.x,offset.y);
+	cef::get_wrapper().browser_send_event_mouse_wheel(browser,brMousePos.x,brMousePos.y,offset.x *3.f,offset.y *3.f);
 	return util::EventReply::Handled;
 }
 void WIWeb::OnFocusGained()

@@ -32,7 +32,7 @@ namespace cef
 		IChromiumWrapper(util::Library &lib);
 		IChromiumWrapper()=default;
 		void(*register_javascript_function)(const std::string &name,cef::JSValue*(* const fCallback)(cef::JSValue*,uint32_t)) = nullptr;
-		bool(*initialize)() = nullptr;
+		bool(*initialize)(const char*,const char*) = nullptr;
 		void(*close)() = nullptr;
 		void(*do_message_loop_work)() = nullptr;
 		CWebRenderHandler*(*render_handler_create)(
@@ -52,9 +52,9 @@ namespace cef
 		CWebBrowser*(*browser_create)(CWebBrowserClient *browserClient,const char *initialUrl) = nullptr;
 		void(*browser_release)(CWebBrowser *browser) = nullptr;
 		void*(*browser_get_user_data)(cef::CWebBrowser *browser) = nullptr;
+		void(*browser_was_resized)(cef::CWebBrowser *browser) = nullptr;
 
-
-		void(*render_handler_set_data_ptr)(CWebRenderHandler *renderHandler,void *ptr) = nullptr;
+		void(*render_handler_set_image_data)(cef::CWebRenderHandler *renderHandler,void *ptr,uint32_t w,uint32_t h) = nullptr;
 		// Browser
 		void(*browser_load_url)(CWebBrowser *browser,const char *url) = nullptr;
 		bool(*browser_can_go_back)(CWebBrowser *browser) = nullptr;

@@ -31,7 +31,8 @@ cef::IChromiumWrapper::IChromiumWrapper(util::Library &lib)
 		PR_CHROMIUM_FIND_SYMBOL(lib,browser_create) &&
 		PR_CHROMIUM_FIND_SYMBOL(lib,browser_release) &&
 		PR_CHROMIUM_FIND_SYMBOL(lib,browser_get_user_data) &&
-		PR_CHROMIUM_FIND_SYMBOL(lib,render_handler_set_data_ptr) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_was_resized) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,render_handler_set_image_data) &&
 		PR_CHROMIUM_FIND_SYMBOL(lib,browser_load_url) &&
 		PR_CHROMIUM_FIND_SYMBOL(lib,browser_can_go_back) &&
 		PR_CHROMIUM_FIND_SYMBOL(lib,browser_can_go_forward) &&
@@ -83,7 +84,11 @@ static bool initialize_chromium(std::string &outErr)
 		outErr = "Unable to initialize chromium wrapper: One or more symbols not found!";
 		return false;
 	}
-	if(!g_chromiumWrapper->initialize())
+	auto pathToSubProcess = util::Path::CreatePath(util::get_program_path()) +util::Path::CreateFile("modules/chromium/pr_chromium_subprocess.exe");
+	auto localPathToCache = util::Path::CreatePath("cache/chromium");
+	filemanager::create_path(localPathToCache.GetString());
+	auto pathToCache = util::Path::CreatePath(util::get_program_path()) +localPathToCache;
+	if(!g_chromiumWrapper->initialize(pathToSubProcess.GetString().c_str(),pathToCache.GetString().c_str()))
 	{
 		g_chromiumWrapper = nullptr;
 		outErr = "Unable to initialize chromium wrapper: Failed to initialize chromium!";

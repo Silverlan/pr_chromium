@@ -60,12 +60,14 @@ public:
 	cef::CWebBrowser *GetBrowser();
 private:
 	bool InitializeChromiumBrowser();
+	bool Resize();
 	void ClearTexture();
 
 	std::string m_initialUrl = "https://pragma-engine.com/";
 	std::shared_ptr<prosper::Texture> m_texture = nullptr;
 	void *m_imgDataPtr = nullptr;
 	bool m_bTransparentBackground = false;
+	bool m_browserInitialized = false;
 	Vector2i m_browserViewSize = {};
 	Vector2i m_mousePos = {};
 	Vector2i GetBrowserMousePos() const;
