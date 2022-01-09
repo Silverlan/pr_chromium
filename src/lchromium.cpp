@@ -36,24 +36,17 @@ static void register_wiweb_class(Lua::Interface &l)
 	classDefWeb.def("SetZoomLevel",&WIWeb::SetZoomLevel);
 	classDefWeb.def("GetZoomLevel",&WIWeb::GetZoomLevel);
 	modGUI[classDefWeb];
+
+	Lua::RegisterLibrary(l.GetState(),"chromium",{});
+	Lua::RegisterLibraryEnums(l.GetState(),"chromium",{
+		{"DOWNLOAD_STATE_DOWNLOADING",umath::to_integral(cef::IChromiumWrapper::DownloadState::Downloading)},
+		{"DOWNLOAD_STATE_CANCELLED",umath::to_integral(cef::IChromiumWrapper::DownloadState::Cancelled)},
+		{"DOWNLOAD_STATE_COMPLETE",umath::to_integral(cef::IChromiumWrapper::DownloadState::Complete)},
+		{"DOWNLOAD_STATE_INVALIDATED",umath::to_integral(cef::IChromiumWrapper::DownloadState::Invalidated)}
+	});
 }
 
 void Lua::chromium::register_library(Lua::Interface &l)
 {
-	/*static auto bGuiFactoryInitialized = false;
-	if(bGuiFactoryInitialized == false)
-	{
-		bGuiFactoryInitialized = true;
-		IState::add_gui_lua_wrapper_factory([](lua_State *l,WIBase *p) -> luabind::object* {
-			if(typeid(*p) == typeid(::WIWeb))
-				return new luabind::object(l,::WIWeb(WITexturedShapeHandle(WIShapeHandle(p->GetHandle()))));
-			return nullptr;
-		});
-	}*/
 	register_wiweb_class(l);
-	/*Lua::RegisterLibrary(lua,"xml",{
-		{"parse",Lua::xml::lib::parse},
-		{"load",Lua::xml::lib::load},
-		{"create",Lua::xml::lib::create}
-	});*/
 }

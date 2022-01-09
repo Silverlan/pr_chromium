@@ -12,12 +12,25 @@ LINK_WGUI_TO_CLASS(WIWeb,WIWeb);
 #pragma optimize("",off)
 void WIWeb::register_callbacks()
 {
-	Lua::gui::register_lua_callback("wiweb","OnDownloadComplete",
+	Lua::gui::register_lua_callback("wiweb","OnDownloadStarted",
 		[](WIBase &el,lua_State *l,const std::function<void(const std::function<void()>&)> &callLuaFunc)
 		-> CallbackHandle {
-		return FunctionCallback<void,util::Path>::Create([l,callLuaFunc](util::Path path) {
-			callLuaFunc([l,&path]() {
+		return FunctionCallback<void,uint32_t,util::Path>::Create([l,callLuaFunc](uint32_t id,util::Path path) {
+			callLuaFunc([l,id,&path]() {
+				Lua::Push(l,id);
 				Lua::Push(l,path);
+			});
+		});
+	});
+	Lua::gui::register_lua_callback("wiweb","OnDownloadUpdate",
+		[](WIBase &el,lua_State *l,const std::function<void(const std::function<void()>&)> &callLuaFunc)
+		-> CallbackHandle {
+		return FunctionCallback<void,uint32_t,cef::IChromiumWrapper::DownloadState,int>::Create(
+			[l,callLuaFunc](uint32_t id,cef::IChromiumWrapper::DownloadState state,int percentage) {
+			callLuaFunc([l,id,state,percentage]() {
+				Lua::Push(l,id);
+				Lua::Push(l,state);
+				Lua::Push(l,percentage);
 			});
 		});
 	});
@@ -25,7 +38,8 @@ void WIWeb::register_callbacks()
 WIWeb::WIWeb()
 	: WITexturedRect()
 {
-	RegisterCallback<void,util::Path>("OnDownloadComplete");
+	RegisterCallback<void,uint32_t,util::Path>("OnDownloadStarted");
+	RegisterCallback<void,uint32_t,cef::IChromiumWrapper::DownloadState,int>("OnDownloadUpdate");
 }
 
 WIWeb::~WIWeb()
@@ -75,6 +89,12 @@ void WIWeb::SetInitialUrl(std::string url) {m_initialUrl = std::move(url);}
 
 bool WIWeb::Resize()
 {
+	if(m_texture)
+	{
+		auto &img = m_texture->GetImage();
+		if(img.GetWidth() == m_browserViewSize.x && img.GetHeight() == m_browserViewSize.y)
+			return true;
+	}
 	ClearTexture();
 
 	auto &context = WGUI::GetInstance().GetContext();
@@ -121,6 +141,13 @@ bool WIWeb::InitializeChromiumBrowser()
 		auto *el = static_cast<WIWeb*>(cef::get_wrapper().render_handler_get_user_data(renderHandler));
 		w = el->GetWidth();
 		h = el->GetHeight();
+
+		if(el->m_texture)
+		{
+			auto extents = el->m_texture->GetImage().GetExtents();
+			w = extents.width;
+			h = extents.height;
+		}
 
 		auto &context = WGUI::GetInstance().GetContext();
 		auto &window = context.GetWindow();
@@ -170,15 +197,23 @@ bool WIWeb::InitializeChromiumBrowser()
 	dlPath += "modules/chromium/downloads/";
 	filemanager::create_path(dlPath.GetString());
 	cef::get_wrapper().browser_client_set_download_location(m_browserClient.get(),dlPath.GetString().c_str());
-	cef::get_wrapper().browser_client_set_download_complete_callback(m_browserClient.get(),[](cef::CWebBrowserClient *browserClient,const char *fileName) {
+	cef::get_wrapper().browser_client_set_download_start_callback(m_browserClient.get(),[](cef::CWebBrowserClient *browserClient,uint32_t id,const char *fileName) {
 		auto relPath = util::Path::CreateFile(fileName);
 		if(!relPath.MakeRelative(util::Path::CreatePath(util::get_program_path())))
 			return;
 		auto *el = static_cast<WIWeb*>(cef::get_wrapper().browser_client_get_user_data(browserClient));
 		if(!el)
 			return;
-		el->CallCallbacks<void,util::Path>("OnDownloadComplete",relPath);
+		el->CallCallbacks<void,uint32_t,util::Path>("OnDownloadStarted",id,relPath);
 	});
+	cef::get_wrapper().browser_client_set_download_update_callback(m_browserClient.get(),
+		[](cef::CWebBrowserClient *browserClient,uint32_t id,cef::IChromiumWrapper::DownloadState state,int percentageComplete) {
+		auto *el = static_cast<WIWeb*>(cef::get_wrapper().browser_client_get_user_data(browserClient));
+		if(!el)
+			return;
+		el->CallCallbacks<void,uint32_t,cef::IChromiumWrapper::DownloadState,int>("OnDownloadUpdate",id,state,percentageComplete);
+	});
+
 	//browser->GetMainFrame()->LoadURL
 	//m_browserClient->GetKeyboardHandler()->OnKeyEvent
 	//CefBrowserHost *x;
@@ -692,7 +727,7 @@ util::EventReply WIWeb::ScrollCallback(Vector2 offset)
 	if(browser == nullptr)
 		return util::EventReply::Unhandled;
 	auto brMousePos = GetBrowserMousePos();
-	cef::get_wrapper().browser_send_event_mouse_wheel(browser,brMousePos.x,brMousePos.y,offset.x *3.f,offset.y *3.f);
+	cef::get_wrapper().browser_send_event_mouse_wheel(browser,brMousePos.x,brMousePos.y,offset.x *5.f,offset.y *5.f);
 	return util::EventReply::Handled;
 }
 void WIWeb::OnFocusGained()

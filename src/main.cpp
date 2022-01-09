@@ -26,7 +26,8 @@ cef::IChromiumWrapper::IChromiumWrapper(util::Library &lib)
 		PR_CHROMIUM_FIND_SYMBOL(lib,browser_client_release) &&
 		PR_CHROMIUM_FIND_SYMBOL(lib,browser_client_set_user_data) &&
 		PR_CHROMIUM_FIND_SYMBOL(lib,browser_client_get_user_data) &&
-		PR_CHROMIUM_FIND_SYMBOL(lib,browser_client_set_download_complete_callback) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_client_set_download_start_callback) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_client_set_download_update_callback) &&
 		PR_CHROMIUM_FIND_SYMBOL(lib,browser_client_set_download_location) &&
 		PR_CHROMIUM_FIND_SYMBOL(lib,browser_create) &&
 		PR_CHROMIUM_FIND_SYMBOL(lib,browser_release) &&

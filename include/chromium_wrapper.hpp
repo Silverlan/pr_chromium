@@ -29,6 +29,14 @@ namespace cef
 	using CWebBrowser = void;
 	struct IChromiumWrapper final
 	{
+		enum class DownloadState : uint32_t
+		{
+			Downloading = 0,
+			Cancelled,
+			Complete,
+			Invalidated
+		};
+
 		IChromiumWrapper(util::Library &lib);
 		IChromiumWrapper()=default;
 		void(*register_javascript_function)(const std::string &name,cef::JSValue*(* const fCallback)(cef::JSValue*,uint32_t)) = nullptr;
@@ -46,7 +54,13 @@ namespace cef
 		void(*browser_client_set_user_data)(cef::CWebBrowserClient *browserClient,void *userData) = nullptr;
 		void*(*browser_client_get_user_data)(cef::CWebBrowserClient *browserClient) = nullptr;
 
-		void(*browser_client_set_download_complete_callback)(cef::CWebBrowserClient *browserClient,void(*onComplete)(cef::CWebBrowserClient*,const char*));
+		void(*browser_client_set_download_start_callback)(
+			cef::CWebBrowserClient *browserClient,void(*onStart)(cef::CWebBrowserClient*,uint32_t,const char*)
+		) = nullptr;
+		void(*browser_client_set_download_update_callback)(
+			cef::CWebBrowserClient *browserClient,void(*onUpdate)(cef::CWebBrowserClient*,uint32_t,DownloadState,int32_t)
+		) = nullptr;
+
 		void(*browser_client_set_download_location)(cef::CWebBrowserClient *browserClient,const char *location);
 
 		CWebBrowser*(*browser_create)(CWebBrowserClient *browserClient,const char *initialUrl) = nullptr;
