@@ -28,6 +28,7 @@ public:
 	virtual void OnFocusKilled() override;
 	virtual void DoUpdate() override;
 
+	void Close();
 	void LoadURL(const std::string &url);
 	void SetBrowserViewSize(const Vector2i size);
 	const Vector2i &GetBrowserViewSize() const;

@@ -65,6 +65,7 @@ namespace cef
 
 		CWebBrowser*(*browser_create)(CWebBrowserClient *browserClient,const char *initialUrl) = nullptr;
 		void(*browser_release)(CWebBrowser *browser) = nullptr;
+		void(*browser_close)(cef::CWebBrowser *browser) = nullptr;
 		void*(*browser_get_user_data)(cef::CWebBrowser *browser) = nullptr;
 		void(*browser_was_resized)(cef::CWebBrowser *browser) = nullptr;
 

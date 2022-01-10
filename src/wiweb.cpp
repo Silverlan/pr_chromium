@@ -44,6 +44,9 @@ WIWeb::WIWeb()
 
 WIWeb::~WIWeb()
 {
+	m_browser = nullptr;
+	m_browserClient = nullptr;
+	m_webRenderer = nullptr;
 	ClearTexture();
 }
 
@@ -194,7 +197,7 @@ bool WIWeb::InitializeChromiumBrowser()
 	}};
 
 	auto dlPath = util::Path::CreatePath(util::get_program_path());
-	dlPath += "modules/chromium/downloads/";
+	dlPath += "cache/chromium/downloads/";
 	filemanager::create_path(dlPath.GetString());
 	cef::get_wrapper().browser_client_set_download_location(m_browserClient.get(),dlPath.GetString().c_str());
 	cef::get_wrapper().browser_client_set_download_start_callback(m_browserClient.get(),[](cef::CWebBrowserClient *browserClient,uint32_t id,const char *fileName) {
@@ -213,7 +216,6 @@ bool WIWeb::InitializeChromiumBrowser()
 			return;
 		el->CallCallbacks<void,uint32_t,cef::IChromiumWrapper::DownloadState,int>("OnDownloadUpdate",id,state,percentageComplete);
 	});
-
 	//browser->GetMainFrame()->LoadURL
 	//m_browserClient->GetKeyboardHandler()->OnKeyEvent
 	//CefBrowserHost *x;
@@ -225,6 +227,14 @@ bool WIWeb::InitializeChromiumBrowser()
 	//CefShutdown();
 
 	return true;
+}
+
+void WIWeb::Close()
+{
+	auto *browser = GetBrowser();
+	if(browser == nullptr)
+		return;
+	cef::get_wrapper().browser_close(browser);
 }
 
 void WIWeb::LoadURL(const std::string &url)

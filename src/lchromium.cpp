@@ -14,7 +14,8 @@ static void register_wiweb_class(Lua::Interface &l)
 	classDefWeb.def("LoadUrl",&WIWeb::LoadURL);
 	classDefWeb.def("SetBrowserViewSize",&WIWeb::SetBrowserViewSize);
 	classDefWeb.def("GetBrowserViewSize",&WIWeb::GetBrowserViewSize,luabind::copy_policy<0>{});
-
+	
+	classDefWeb.def("Close",&WIWeb::Close);
 	classDefWeb.def("CanGoBack",&WIWeb::CanGoBack);
 	classDefWeb.def("CanGoForward",&WIWeb::CanGoForward);
 	classDefWeb.def("GoBack",&WIWeb::GoBack);

@@ -31,6 +31,7 @@ cef::IChromiumWrapper::IChromiumWrapper(util::Library &lib)
 		PR_CHROMIUM_FIND_SYMBOL(lib,browser_client_set_download_location) &&
 		PR_CHROMIUM_FIND_SYMBOL(lib,browser_create) &&
 		PR_CHROMIUM_FIND_SYMBOL(lib,browser_release) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_close) &&
 		PR_CHROMIUM_FIND_SYMBOL(lib,browser_get_user_data) &&
 		PR_CHROMIUM_FIND_SYMBOL(lib,browser_was_resized) &&
 		PR_CHROMIUM_FIND_SYMBOL(lib,render_handler_set_image_data) &&
@@ -78,6 +79,7 @@ static bool initialize_chromium(std::string &outErr)
 		outErr = std::move(err);
 		return false;
 	}
+	lib->SetDontFreeLibraryOnDestruct(); // Don't free until program shutdown (otherwise chromium may not shut down correctly)
 	g_libChromiumWrapper = lib;
 	g_chromiumWrapper = std::make_unique<cef::IChromiumWrapper>(*lib);
 	if(!g_chromiumWrapper->valid())
