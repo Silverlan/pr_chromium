@@ -62,6 +62,7 @@ namespace cef
 		) = nullptr;
 
 		void(*browser_client_set_download_location)(cef::CWebBrowserClient *browserClient,const char *location);
+		void(*browser_client_set_on_address_change_callback)(cef::CWebBrowserClient *browserClient,void(*onAddressChange)(cef::CWebBrowserClient*,const char*));
 
 		CWebBrowser*(*browser_create)(CWebBrowserClient *browserClient,const char *initialUrl) = nullptr;
 		void(*browser_release)(CWebBrowser *browser) = nullptr;

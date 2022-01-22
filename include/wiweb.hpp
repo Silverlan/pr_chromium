@@ -30,7 +30,7 @@ public:
 
 	void Close();
 	void LoadURL(const std::string &url);
-	void SetBrowserViewSize(const Vector2i size);
+	void SetBrowserViewSize(Vector2i size);
 	const Vector2i &GetBrowserViewSize() const;
 	bool CanGoBack();
 	bool CanGoForward();

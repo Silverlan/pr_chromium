@@ -41,3 +41,9 @@ endif()
 set(DEPENDENCY_PR_CHROMIUM_WRAPPER_LIBRARY "${CMAKE_CURRENT_BINARY_DIR}/external_libs/pr_chromium_wrapper/${CONFIG_BUILD_TYPE}/pr_chromium_wrapper${OS_LIB_SHARED_EXT}" CACHE STRING "" FORCE)
 
 add_dependencies(${PROJ_NAME} pr_chromium_wrapper pr_chromium_subprocess)
+
+set_target_properties(pr_chromium PROPERTIES FOLDER modules/chromium)
+set_target_properties(pr_chromium_wrapper PROPERTIES FOLDER modules/chromium)
+set_target_properties(pr_chromium_subprocess PROPERTIES FOLDER modules/chromium)
+
+set_property(GLOBAL PROPERTY PRAGMA_MODULE_SKIP_TARGET_PROPERTY_FOLDER 1)

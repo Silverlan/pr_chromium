@@ -34,12 +34,23 @@ void WIWeb::register_callbacks()
 			});
 		});
 	});
+	Lua::gui::register_lua_callback("wiweb","OnAddressChanged",
+		[](WIBase &el,lua_State *l,const std::function<void(const std::function<void()>&)> &callLuaFunc)
+		-> CallbackHandle {
+		return FunctionCallback<void,std::string>::Create(
+			[l,callLuaFunc](std::string address) {
+			callLuaFunc([l,&address]() {
+				Lua::PushString(l,address);
+			});
+		});
+	});
 }
 WIWeb::WIWeb()
 	: WITexturedRect()
 {
 	RegisterCallback<void,uint32_t,util::Path>("OnDownloadStarted");
 	RegisterCallback<void,uint32_t,cef::IChromiumWrapper::DownloadState,int>("OnDownloadUpdate");
+	RegisterCallback<void,std::string>("OnAddressChanged");
 }
 
 WIWeb::~WIWeb()
@@ -144,6 +155,8 @@ bool WIWeb::InitializeChromiumBrowser()
 		auto *el = static_cast<WIWeb*>(cef::get_wrapper().render_handler_get_user_data(renderHandler));
 		w = el->GetWidth();
 		h = el->GetHeight();
+		w = umath::max(w,1);
+		h = umath::max(h,1);
 
 		if(el->m_texture)
 		{
@@ -216,16 +229,12 @@ bool WIWeb::InitializeChromiumBrowser()
 			return;
 		el->CallCallbacks<void,uint32_t,cef::IChromiumWrapper::DownloadState,int>("OnDownloadUpdate",id,state,percentageComplete);
 	});
-	//browser->GetMainFrame()->LoadURL
-	//m_browserClient->GetKeyboardHandler()->OnKeyEvent
-	//CefBrowserHost *x;
-	//x->SendKeyEvent()
-
-	// TODO: Release browser?
-	
-	//CefRunMessageLoop();
-	//CefShutdown();
-
+	cef::get_wrapper().browser_client_set_on_address_change_callback(m_browserClient.get(),[](cef::CWebBrowserClient *browserClient,const char *address) {
+		auto *el = static_cast<WIWeb*>(cef::get_wrapper().browser_client_get_user_data(browserClient));
+		if(!el)
+			return;
+		el->CallCallbacks<void,std::string>("OnAddressChanged",std::string{address});
+	});
 	return true;
 }
 
@@ -245,7 +254,12 @@ void WIWeb::LoadURL(const std::string &url)
 	cef::get_wrapper().browser_load_url(browser,url.c_str());
 }
 
-void WIWeb::SetBrowserViewSize(const Vector2i size) {m_browserViewSize = size;}
+void WIWeb::SetBrowserViewSize(Vector2i size)
+{
+	size.x = umath::max(size.x,1);
+	size.y = umath::max(size.y,1);
+	m_browserViewSize = size;
+}
 const Vector2i &WIWeb::GetBrowserViewSize() const {return m_browserViewSize;}
 
 bool WIWeb::CanGoBack()
