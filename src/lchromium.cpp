@@ -3,6 +3,7 @@
 #include "wvmodule.hpp"
 #include "wiweb.hpp"
 #include <pragma/lua/luaapi.h>
+#include <pragma/lua/converters/optional_converter_t.hpp>
 #include <luabind/copy_policy.hpp>
 #include <luasystem.h>
 #include <luainterface.hpp>
@@ -12,6 +13,7 @@ static void register_wiweb_class(Lua::Interface &l)
 	auto &modGUI = l.RegisterLibrary("gui");
 	auto classDefWeb = luabind::class_<::WIWeb,luabind::bases<WITexturedShape,WIShape,::WIBase>>("Web");
 	classDefWeb.def("LoadUrl",&WIWeb::LoadURL);
+	classDefWeb.def("GetUrl",&WIWeb::GetUrl);
 	classDefWeb.def("SetBrowserViewSize",&WIWeb::SetBrowserViewSize);
 	classDefWeb.def("GetBrowserViewSize",&WIWeb::GetBrowserViewSize,luabind::copy_policy<0>{});
 	
@@ -33,12 +35,46 @@ static void register_wiweb_class(Lua::Interface &l)
 	classDefWeb.def("SelectAll",&WIWeb::SelectAll);
 	classDefWeb.def("Undo",&WIWeb::Undo);
 	classDefWeb.def("SetInitialUrl",&WIWeb::SetInitialUrl);
+	classDefWeb.def("ExecuteJavaScript",&WIWeb::ExecuteJavaScript);
 
 	classDefWeb.def("SetZoomLevel",&WIWeb::SetZoomLevel);
 	classDefWeb.def("GetZoomLevel",&WIWeb::GetZoomLevel);
 	modGUI[classDefWeb];
-
-	Lua::RegisterLibrary(l.GetState(),"chromium",{});
+	
+	auto &modChromium = l.RegisterLibrary("chromium");
+	modChromium[
+		luabind::def("parse_url",+[](lua_State *l,const std::string &url) -> std::optional<luabind::map<std::string,std::string>> {
+			luabind::object t = luabind::newtable(l);
+			auto success = cef::get_wrapper().parse_url(url.c_str(),[](
+				void *userData,
+				const char *host,
+				const char *fragment,
+				const char *password,
+				const char *origin,
+				const char *path,
+				const char *port,
+				const char *query,
+				const char *scheme,
+				const char *spec,
+				const char *username
+			) {
+				auto &t = *static_cast<luabind::object*>(userData);
+				t["host"] = host;
+				t["fragment"] = fragment;
+				t["password"] = password;
+				t["origin"] = origin;
+				t["path"] = path;
+				t["port"] = port;
+				t["query"] = query;
+				t["scheme"] = scheme;
+				t["spec"] = spec;
+				t["username"] = username;
+			},&t);
+			if(!success)
+				return Lua::nil;
+			return t;
+		})
+	];
 	Lua::RegisterLibraryEnums(l.GetState(),"chromium",{
 		{"DOWNLOAD_STATE_DOWNLOADING",umath::to_integral(cef::IChromiumWrapper::DownloadState::Downloading)},
 		{"DOWNLOAD_STATE_CANCELLED",umath::to_integral(cef::IChromiumWrapper::DownloadState::Cancelled)},

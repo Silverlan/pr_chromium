@@ -53,8 +53,10 @@ public:
 	void SetZoomLevel(double lv);
 	double GetZoomLevel();
 	void SetTransparentBackground(bool b);
+	void ExecuteJavaScript(const std::string &js);
 
 	void SetInitialUrl(std::string url);
+	std::string GetUrl() const {return m_url;}
 
 	cef::CWebRenderHandler *GetRenderer();
 	cef::CWebBrowserClient *GetBrowserClient();
@@ -65,6 +67,7 @@ private:
 	void ClearTexture();
 
 	std::string m_initialUrl = "https://pragma-engine.com/";
+	std::string m_url;
 	std::shared_ptr<prosper::Texture> m_texture = nullptr;
 	void *m_imgDataPtr = nullptr;
 	bool m_bTransparentBackground = false;

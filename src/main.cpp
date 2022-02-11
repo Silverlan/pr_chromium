@@ -18,6 +18,7 @@ cef::IChromiumWrapper::IChromiumWrapper(util::Library &lib)
 		PR_CHROMIUM_FIND_SYMBOL(lib,initialize) &&
 		PR_CHROMIUM_FIND_SYMBOL(lib,close) &&
 		PR_CHROMIUM_FIND_SYMBOL(lib,do_message_loop_work) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,parse_url) &&
 		PR_CHROMIUM_FIND_SYMBOL(lib,render_handler_create) &&
 		PR_CHROMIUM_FIND_SYMBOL(lib,render_handler_release) &&
 		PR_CHROMIUM_FIND_SYMBOL(lib,render_handler_set_user_data) &&
@@ -30,6 +31,10 @@ cef::IChromiumWrapper::IChromiumWrapper(util::Library &lib)
 		PR_CHROMIUM_FIND_SYMBOL(lib,browser_client_set_download_update_callback) &&
 		PR_CHROMIUM_FIND_SYMBOL(lib,browser_client_set_download_location) &&
 		PR_CHROMIUM_FIND_SYMBOL(lib,browser_client_set_on_address_change_callback) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_client_set_on_loading_state_change) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_client_set_on_load_start) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_client_set_on_load_end) &&
+		PR_CHROMIUM_FIND_SYMBOL(lib,browser_client_set_on_load_error) &&
 		PR_CHROMIUM_FIND_SYMBOL(lib,browser_create) &&
 		PR_CHROMIUM_FIND_SYMBOL(lib,browser_release) &&
 		PR_CHROMIUM_FIND_SYMBOL(lib,browser_close) &&

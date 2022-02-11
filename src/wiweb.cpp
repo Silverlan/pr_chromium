@@ -44,6 +44,50 @@ void WIWeb::register_callbacks()
 			});
 		});
 	});
+	Lua::gui::register_lua_callback("wiweb","OnLoadEnd",
+		[](WIBase &el,lua_State *l,const std::function<void(const std::function<void()>&)> &callLuaFunc)
+		-> CallbackHandle {
+		return FunctionCallback<void,int>::Create(
+			[l,callLuaFunc](int httpStatusCode) {
+			callLuaFunc([l,httpStatusCode]() {
+				Lua::PushInt(l,httpStatusCode);
+			});
+		});
+	});
+	Lua::gui::register_lua_callback("wiweb","OnLoadError",
+		[](WIBase &el,lua_State *l,const std::function<void(const std::function<void()>&)> &callLuaFunc)
+		-> CallbackHandle {
+		return FunctionCallback<void,int,std::string,std::string>::Create(
+			[l,callLuaFunc](int errorCode,std::string errorText,std::string failedUrl) {
+			callLuaFunc([l,errorCode,&errorText,&failedUrl]() {
+				Lua::PushInt(l,errorCode);
+				Lua::PushString(l,errorText);
+				Lua::PushString(l,failedUrl);
+			});
+		});
+	});
+	Lua::gui::register_lua_callback("wiweb","OnLoadStart",
+		[](WIBase &el,lua_State *l,const std::function<void(const std::function<void()>&)> &callLuaFunc)
+		-> CallbackHandle {
+		return FunctionCallback<void,int>::Create(
+			[l,callLuaFunc](int transitionType) {
+			callLuaFunc([l,transitionType]() {
+				Lua::PushInt(l,transitionType);
+			});
+		});
+	});
+	Lua::gui::register_lua_callback("wiweb","OnLoadingStateChange",
+		[](WIBase &el,lua_State *l,const std::function<void(const std::function<void()>&)> &callLuaFunc)
+		-> CallbackHandle {
+		return FunctionCallback<void,bool,bool,bool>::Create(
+			[l,callLuaFunc](bool isLoading,bool canGoBack,bool canGoForward) {
+			callLuaFunc([l,isLoading,canGoBack,canGoForward]() {
+				Lua::PushBool(l,isLoading);
+				Lua::PushBool(l,canGoBack);
+				Lua::PushBool(l,canGoForward);
+			});
+		});
+	});
 }
 WIWeb::WIWeb()
 	: WITexturedRect()
@@ -51,6 +95,10 @@ WIWeb::WIWeb()
 	RegisterCallback<void,uint32_t,util::Path>("OnDownloadStarted");
 	RegisterCallback<void,uint32_t,cef::IChromiumWrapper::DownloadState,int>("OnDownloadUpdate");
 	RegisterCallback<void,std::string>("OnAddressChanged");
+	RegisterCallback<void,int>("OnLoadEnd");
+	RegisterCallback<void,int,std::string,std::string>("OnLoadError");
+	RegisterCallback<void,int>("OnLoadStart");
+	RegisterCallback<void,bool,bool,bool>("OnLoadingStateChange");
 }
 
 WIWeb::~WIWeb()
@@ -100,6 +148,13 @@ void WIWeb::DoUpdate()
 void WIWeb::SetTransparentBackground(bool b) {m_bTransparentBackground = b;}
 
 void WIWeb::SetInitialUrl(std::string url) {m_initialUrl = std::move(url);}
+
+void WIWeb::ExecuteJavaScript(const std::string &js)
+{
+	auto *browser = GetBrowser();
+	if(browser)
+		cef::get_wrapper().browser_execute_java_script(browser,js.c_str(),nullptr);
+}
 
 bool WIWeb::Resize()
 {
@@ -233,7 +288,32 @@ bool WIWeb::InitializeChromiumBrowser()
 		auto *el = static_cast<WIWeb*>(cef::get_wrapper().browser_client_get_user_data(browserClient));
 		if(!el)
 			return;
+		el->m_url = address;
 		el->CallCallbacks<void,std::string>("OnAddressChanged",std::string{address});
+	});
+	cef::get_wrapper().browser_client_set_on_loading_state_change(m_browserClient.get(),[](cef::CWebBrowserClient *browserClient,bool isLoading,bool canGoBack,bool canGoForward) {
+		auto *el = static_cast<WIWeb*>(cef::get_wrapper().browser_client_get_user_data(browserClient));
+		if(!el)
+			return;
+		el->CallCallbacks<void,bool,bool,bool>("OnLoadingStateChange",isLoading,canGoBack,canGoForward);
+	});
+	cef::get_wrapper().browser_client_set_on_load_start(m_browserClient.get(),[](cef::CWebBrowserClient *browserClient,int transitionType) {
+		auto *el = static_cast<WIWeb*>(cef::get_wrapper().browser_client_get_user_data(browserClient));
+		if(!el)
+			return;
+		el->CallCallbacks<void,int>("OnLoadStart",transitionType);
+	});
+	cef::get_wrapper().browser_client_set_on_load_end(m_browserClient.get(),[](cef::CWebBrowserClient *browserClient,int httpStatusCode) {
+		auto *el = static_cast<WIWeb*>(cef::get_wrapper().browser_client_get_user_data(browserClient));
+		if(!el)
+			return;
+		el->CallCallbacks<void,int>("OnLoadEnd",httpStatusCode);
+	});
+	cef::get_wrapper().browser_client_set_on_load_error(m_browserClient.get(),[](cef::CWebBrowserClient *browserClient,int errorCode,const char *errorText,const char *failedUrl) {
+		auto *el = static_cast<WIWeb*>(cef::get_wrapper().browser_client_get_user_data(browserClient));
+		if(!el)
+			return;
+		el->CallCallbacks<void,int,std::string,std::string>("OnLoadError",errorCode,std::string{errorText},std::string{failedUrl});
 	});
 	return true;
 }

@@ -43,6 +43,7 @@ namespace cef
 		bool(*initialize)(const char*,const char*) = nullptr;
 		void(*close)() = nullptr;
 		void(*do_message_loop_work)() = nullptr;
+		bool(*parse_url)(const char *url,void(*r)(void*,const char*,const char*,const char*,const char*,const char*,const char*,const char*,const char*,const char*,const char*),void*);
 		CWebRenderHandler*(*render_handler_create)(
 			void(*fGetRootScreenRect)(CWebRenderHandler*,int&,int&,int&,int&),void(*fGetViewRect)(CWebRenderHandler*,int&,int&,int&,int&),void(*fGetScreenPoint)(CWebRenderHandler*,int,int,int&,int&)
 		) = nullptr;
@@ -63,6 +64,18 @@ namespace cef
 
 		void(*browser_client_set_download_location)(cef::CWebBrowserClient *browserClient,const char *location);
 		void(*browser_client_set_on_address_change_callback)(cef::CWebBrowserClient *browserClient,void(*onAddressChange)(cef::CWebBrowserClient*,const char*));
+		void(*browser_client_set_on_loading_state_change)(
+			cef::CWebBrowserClient *browserClient,void(*onLoadingStateChange)(cef::CWebBrowserClient*,bool,bool,bool)
+		);
+		void(*browser_client_set_on_load_start)(
+			cef::CWebBrowserClient *browserClient,void(*onLoadStart)(cef::CWebBrowserClient*,int)
+		);
+		void(*browser_client_set_on_load_end)(
+			cef::CWebBrowserClient *browserClient,void(*onLoadEnd)(cef::CWebBrowserClient*,int)
+		);
+		void(*browser_client_set_on_load_error)(
+			cef::CWebBrowserClient *browserClient,void(*onLoadError)(cef::CWebBrowserClient*,int,const char*,const char*)
+		);
 
 		CWebBrowser*(*browser_create)(CWebBrowserClient *browserClient,const char *initialUrl) = nullptr;
 		void(*browser_release)(CWebBrowser *browser) = nullptr;
