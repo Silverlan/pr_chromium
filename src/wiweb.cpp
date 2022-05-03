@@ -176,6 +176,7 @@ bool WIWeb::Resize()
 	imgCreateInfo.memoryFeatures = prosper::MemoryFeatureFlags::CPUToGPU;
 	imgCreateInfo.tiling = prosper::ImageTiling::Linear;
 	imgCreateInfo.usage = prosper::ImageUsageFlags::SampledBit;
+	imgCreateInfo.postCreateLayout = prosper::ImageLayout::ShaderReadOnlyOptimal;
 	auto img = context.CreateImage(imgCreateInfo);
 	prosper::util::ImageViewCreateInfo imgViewCreateInfo {};
 	imgViewCreateInfo.swizzleRed = prosper::ComponentSwizzle::B;
