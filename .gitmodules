@@ -1,3 +1,3 @@
 [submodule "external_libs/pr_chromium_wrapper"]
 	path = external_libs/pr_chromium_wrapper
-	url = https://github.com/Silverlan/pr_chromium_wrapper.git
+	url = https://github.com/Slaweknowy/pr_chromium_wrapper.git
