@@ -5,7 +5,13 @@
 #include <image/prosper_texture.hpp>
 #include "chromium_wrapper.hpp"
 
-class __declspec(dllexport) WIWeb
+#ifdef __linux__
+#define DLLEXPORT __attribute__((visibility("default")))
+#else
+#define DLLEXPORT __declspec(dllexport)
+#endif
+
+class DLLEXPORT WIWeb
 	: public WITexturedRect
 {
 public:

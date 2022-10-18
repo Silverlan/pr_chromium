@@ -1,4 +1,4 @@
 pragma_install_create_directory(modules/chromium)
-pragma_install_lib("${CMAKE_CURRENT_BINARY_DIR}/modules/pr_chromium/${CONFIG_BUILD_TYPE}/pr_chromium${OS_LIB_BIN_EXT}" "modules/chromium/" OPTIONAL)
-pragma_install_lib("${CMAKE_CURRENT_BINARY_DIR}/modules/pr_chromium/external_libs/pr_chromium_wrapper/${CONFIG_BUILD_TYPE}/pr_chromium_wrapper${OS_LIB_BIN_EXT}" "modules/chromium/" OPTIONAL)
-pragma_install_file("${CMAKE_CURRENT_BINARY_DIR}/modules/pr_chromium/external_libs/pr_chromium_wrapper/subprocess/${CONFIG_BUILD_TYPE}/pr_chromium_subprocess${OS_EXE_EXT}" "modules/chromium/" OPTIONAL)
+pragma_install_file("${CMAKE_CURRENT_BINARY_DIR}/modules/pr_chromium/${PR_MODULE_INSTALL_SUBDIR}/${OS_LIB_BIN_PRE}pr_chromium${OS_LIB_BIN_EXT}" "modules/chromium/" OPTIONAL)
+pragma_install_file("${CMAKE_CURRENT_BINARY_DIR}/modules/pr_chromium/external_libs/pr_chromium_wrapper/${PR_MODULE_INSTALL_SUBDIR}/${OS_LIB_BIN_PRE}pr_chromium_wrapper${OS_LIB_BIN_EXT}" "modules/chromium/" OPTIONAL)
+pragma_install_program("${CMAKE_CURRENT_BINARY_DIR}/modules/pr_chromium/external_libs/pr_chromium_wrapper/subprocess/${PR_MODULE_INSTALL_SUBDIR}/pr_chromium_subprocess${OS_EXE_EXT}" "modules/chromium/" OPTIONAL)
