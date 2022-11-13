@@ -79,7 +79,12 @@ static bool initialize_chromium(std::string &outErr)
 		return *initResult;
 	initResult = false;
 	std::string err;
+
+#if _WIN32
 	auto lib = util::load_library_module("chromium/pr_chromium_wrapper",{},{},&err);
+#else
+    auto lib = util::load_library_module("chromium/libpr_chromium_wrapper",{},{},&err);
+#endif
 	if(!lib)
 	{
 		outErr = std::move(err);
@@ -93,7 +98,11 @@ static bool initialize_chromium(std::string &outErr)
 		outErr = "Unable to initialize chromium wrapper: One or more symbols not found!";
 		return false;
 	}
+#if _WIN32
 	auto pathToSubProcess = util::Path::CreatePath(util::get_program_path()) +util::Path::CreateFile("modules/chromium/pr_chromium_subprocess.exe");
+#elif __linux__
+    auto pathToSubProcess = util::Path::CreatePath(util::get_program_path()) +util::Path::CreateFile("modules/chromium/pr_chromium_subprocess");
+#endif
 	auto localPathToCache = util::Path::CreatePath("cache/chromium");
 	filemanager::create_path(localPathToCache.GetString());
 	auto pathToCache = util::Path::CreatePath(util::get_program_path()) +localPathToCache;

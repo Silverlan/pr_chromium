@@ -8,6 +8,10 @@
 #include <fsys/filesystem.h>
 #include <memory>
 
+#if __linux__
+#include <linux/input-event-codes.h> //for key defines
+#endif
+
 LINK_WGUI_TO_CLASS(WIWeb,WIWeb);
 #pragma optimize("",off)
 void WIWeb::register_callbacks()
@@ -249,7 +253,7 @@ bool WIWeb::InitializeChromiumBrowser()
 	}};
 	cef::get_wrapper().render_handler_set_user_data(m_webRenderer.get(),this);
 
-	auto hWindow = GetActiveWindow();
+    //auto hWindow = GetActiveWindow();
 	// TODO: Apply m_bTransparentBackground ?
 	//window_info.windowless_rendering_enabled = true;
 	//window_info.SetAsPopup(NULL, "cefsimple");
@@ -581,216 +585,430 @@ util::EventReply WIWeb::KeyboardCallback(GLFW::Key key,int scanCode,GLFW::KeySta
 	std::optional<char> c {};
 	switch(key)
 	{
-		case GLFW::Key::Escape:
-			systemKey = VK_ESCAPE;
-			break;
-		case GLFW::Key::Enter:
-			systemKey = VK_RETURN;
-			break;
-		case GLFW::Key::Tab:
-			systemKey = VK_TAB;
-			break;
-		case GLFW::Key::Backspace:
-			systemKey = VK_BACK;
-			break;
-		case GLFW::Key::Insert:
-			systemKey = VK_INSERT;
-			break;
-		case GLFW::Key::Delete:
-			systemKey = VK_DELETE;
-			break;
-		case GLFW::Key::Right:
-			systemKey = VK_RIGHT;
-			break;
-		case GLFW::Key::Left:
-			systemKey = VK_LEFT;
-			break;
-		case GLFW::Key::Down:
-			systemKey = VK_DOWN;
-			break;
-		case GLFW::Key::Up:
-			systemKey = VK_UP;
-			break;
-		case GLFW::Key::PageUp:
-			systemKey = VK_PRIOR;
-			break;
-		case GLFW::Key::PageDown:
-			systemKey = VK_NEXT;
-			break;
-		case GLFW::Key::Home:
-			systemKey = VK_HOME;
-			break;
-		case GLFW::Key::End:
-			systemKey = VK_END;
-			break;
-		case GLFW::Key::CapsLock:
-			systemKey = VK_CAPITAL;
-			break;
-		case GLFW::Key::ScrollLock:
-			systemKey = VK_SCROLL;
-			break;
-		case GLFW::Key::NumLock:
-			systemKey = VK_NUMLOCK;
-			break;
-		case GLFW::Key::PrintScreen:
-			systemKey = VK_PRINT;
-			break;
-		case GLFW::Key::Pause:
-			systemKey = VK_PAUSE;
-			break;
-		case GLFW::Key::F1:
-			systemKey = VK_F1;
-			break;
-		case GLFW::Key::F2:
-			systemKey = VK_F2;
-			break;
-		case GLFW::Key::F3:
-			systemKey = VK_F3;
-			break;
-		case GLFW::Key::F4:
-			systemKey = VK_F4;
-			break;
-		case GLFW::Key::F5:
-			systemKey = VK_F5;
-			break;
-		case GLFW::Key::F6:
-			systemKey = VK_F6;
-			break;
-		case GLFW::Key::F7:
-			systemKey = VK_F7;
-			break;
-		case GLFW::Key::F8:
-			systemKey = VK_F8;
-			break;
-		case GLFW::Key::F9:
-			systemKey = VK_F9;
-			break;
-		case GLFW::Key::F10:
-			systemKey = VK_F10;
-			break;
-		case GLFW::Key::F11:
-			systemKey = VK_F11;
-			break;
-		case GLFW::Key::F12:
-			systemKey = VK_F12;
-			break;
-		case GLFW::Key::F13:
-			systemKey = VK_F13;
-			break;
-		case GLFW::Key::F14:
-			systemKey = VK_F14;
-			break;
-		case GLFW::Key::F15:
-			systemKey = VK_F15;
-			break;
-		case GLFW::Key::F16:
-			systemKey = VK_F16;
-			break;
-		case GLFW::Key::F17:
-			systemKey = VK_F17;
-			break;
-		case GLFW::Key::F18:
-			systemKey = VK_F18;
-			break;
-		case GLFW::Key::F19:
-			systemKey = VK_F19;
-			break;
-		case GLFW::Key::F20:
-			systemKey = VK_F20;
-			break;
-		case GLFW::Key::F21:
-			systemKey = VK_F21;
-			break;
-		case GLFW::Key::F22:
-			systemKey = VK_F22;
-			break;
-		case GLFW::Key::F23:
-			systemKey = VK_F23;
-			break;
-		case GLFW::Key::F24:
-			systemKey = VK_F24;
-			break;
-		//case GLFW::Key::F25:
-		//	systemKey = VK_F25;
-		//	break;
-		case GLFW::Key::Kp0:
-			systemKey = VK_NUMPAD0;
-			break;
-		case GLFW::Key::Kp1:
-			systemKey = VK_NUMPAD1;
-			break;
-		case GLFW::Key::Kp2:
-			systemKey = VK_NUMPAD2;
-			break;
-		case GLFW::Key::Kp3:
-			systemKey = VK_NUMPAD3;
-			break;
-		case GLFW::Key::Kp4:
-			systemKey = VK_NUMPAD4;
-			break;
-		case GLFW::Key::Kp5:
-			systemKey = VK_NUMPAD5;
-			break;
-		case GLFW::Key::Kp6:
-			systemKey = VK_NUMPAD6;
-			break;
-		case GLFW::Key::Kp7:
-			systemKey = VK_NUMPAD7;
-			break;
-		case GLFW::Key::Kp8:
-			systemKey = VK_NUMPAD8;
-			break;
-		case GLFW::Key::Kp9:
-			systemKey = VK_NUMPAD9;
-			break;
-		case GLFW::Key::KpDecimal:
-			systemKey = VK_DECIMAL;
-			break;
-		case GLFW::Key::KpDivide:
-			systemKey = VK_DIVIDE;
-			break;
-		case GLFW::Key::KpMultiply:
-			systemKey = VK_MULTIPLY;
-			break;
-		case GLFW::Key::KpSubtract:
-			systemKey = VK_SUBTRACT;
-			break;
-		case GLFW::Key::KpAdd:
-			systemKey = VK_ADD;
-			break;
-		case GLFW::Key::KpEnter:
-			systemKey = VK_RETURN;
-			break;
-		//case GLFW::Key::KpEqual:
-		//	systemKey = VK_KP_EQUAL;
-		//	break;
-		case GLFW::Key::LeftShift:
-			systemKey = VK_LSHIFT;
-			break;
-		case GLFW::Key::LeftControl:
-			systemKey = VK_LCONTROL;
-			break;
-		case GLFW::Key::LeftAlt:
-			systemKey = VK_MENU;
-			break;
-		case GLFW::Key::LeftSuper:
-			systemKey = VK_LWIN;
-			break;
-		case GLFW::Key::RightShift:
-			systemKey = VK_LSHIFT;
-			break;
-		case GLFW::Key::RightControl:
-			systemKey = VK_LCONTROL;
-			break;
-		case GLFW::Key::RightAlt:
-			systemKey = VK_MENU;
-			break;
-		case GLFW::Key::RightSuper:
-			systemKey = VK_RWIN;
-			break;
-		case GLFW::Key::Menu:
-			systemKey = VK_MENU;
-			break;
+#ifdef _WIN32
+        case GLFW::Key::Escape:
+            systemKey = VK_ESCAPE;
+            break;
+        case GLFW::Key::Enter:
+            systemKey = VK_RETURN;
+            break;
+        case GLFW::Key::Tab:
+            systemKey = VK_TAB;
+            break;
+        case GLFW::Key::Backspace:
+            systemKey = VK_BACK;
+            break;
+        case GLFW::Key::Insert:
+            systemKey = VK_INSERT;
+            break;
+        case GLFW::Key::Delete:
+            systemKey = VK_DELETE;
+            break;
+        case GLFW::Key::Right:
+            systemKey = VK_RIGHT;
+            break;
+        case GLFW::Key::Left:
+            systemKey = VK_LEFT;
+            break;
+        case GLFW::Key::Down:
+            systemKey = VK_DOWN;
+            break;
+        case GLFW::Key::Up:
+            systemKey = VK_UP;
+            break;
+        case GLFW::Key::PageUp:
+            systemKey = VK_PRIOR;
+            break;
+        case GLFW::Key::PageDown:
+            systemKey = VK_NEXT;
+            break;
+        case GLFW::Key::Home:
+            systemKey = VK_HOME;
+            break;
+        case GLFW::Key::End:
+            systemKey = VK_END;
+            break;
+        case GLFW::Key::CapsLock:
+            systemKey = VK_CAPITAL;
+            break;
+        case GLFW::Key::ScrollLock:
+            systemKey = VK_SCROLL;
+            break;
+        case GLFW::Key::NumLock:
+            systemKey = VK_NUMLOCK;
+            break;
+        case GLFW::Key::PrintScreen:
+            systemKey = VK_PRINT;
+            break;
+        case GLFW::Key::Pause:
+            systemKey = VK_PAUSE;
+            break;
+        case GLFW::Key::F1:
+            systemKey = VK_F1;
+            break;
+        case GLFW::Key::F2:
+            systemKey = VK_F2;
+            break;
+        case GLFW::Key::F3:
+            systemKey = VK_F3;
+            break;
+        case GLFW::Key::F4:
+            systemKey = VK_F4;
+            break;
+        case GLFW::Key::F5:
+            systemKey = VK_F5;
+            break;
+        case GLFW::Key::F6:
+            systemKey = VK_F6;
+            break;
+        case GLFW::Key::F7:
+            systemKey = VK_F7;
+            break;
+        case GLFW::Key::F8:
+            systemKey = VK_F8;
+            break;
+        case GLFW::Key::F9:
+            systemKey = VK_F9;
+            break;
+        case GLFW::Key::F10:
+            systemKey = VK_F10;
+            break;
+        case GLFW::Key::F11:
+            systemKey = VK_F11;
+            break;
+        case GLFW::Key::F12:
+            systemKey = VK_F12;
+            break;
+        case GLFW::Key::F13:
+            systemKey = VK_F13;
+            break;
+        case GLFW::Key::F14:
+            systemKey = VK_F14;
+            break;
+        case GLFW::Key::F15:
+            systemKey = VK_F15;
+            break;
+        case GLFW::Key::F16:
+            systemKey = VK_F16;
+            break;
+        case GLFW::Key::F17:
+            systemKey = VK_F17;
+            break;
+        case GLFW::Key::F18:
+            systemKey = VK_F18;
+            break;
+        case GLFW::Key::F19:
+            systemKey = VK_F19;
+            break;
+        case GLFW::Key::F20:
+            systemKey = VK_F20;
+            break;
+        case GLFW::Key::F21:
+            systemKey = VK_F21;
+            break;
+        case GLFW::Key::F22:
+            systemKey = VK_F22;
+            break;
+        case GLFW::Key::F23:
+            systemKey = VK_F23;
+            break;
+        case GLFW::Key::F24:
+            systemKey = VK_F24;
+            break;
+        //case GLFW::Key::F25:
+        //	systemKey = VK_F25;
+        //	break;
+        case GLFW::Key::Kp0:
+            systemKey = VK_NUMPAD0;
+            break;
+        case GLFW::Key::Kp1:
+            systemKey = VK_NUMPAD1;
+            break;
+        case GLFW::Key::Kp2:
+            systemKey = VK_NUMPAD2;
+            break;
+        case GLFW::Key::Kp3:
+            systemKey = VK_NUMPAD3;
+            break;
+        case GLFW::Key::Kp4:
+            systemKey = VK_NUMPAD4;
+            break;
+        case GLFW::Key::Kp5:
+            systemKey = VK_NUMPAD5;
+            break;
+        case GLFW::Key::Kp6:
+            systemKey = VK_NUMPAD6;
+            break;
+        case GLFW::Key::Kp7:
+            systemKey = VK_NUMPAD7;
+            break;
+        case GLFW::Key::Kp8:
+            systemKey = VK_NUMPAD8;
+            break;
+        case GLFW::Key::Kp9:
+            systemKey = VK_NUMPAD9;
+            break;
+        case GLFW::Key::KpDecimal:
+            systemKey = VK_DECIMAL;
+            break;
+        case GLFW::Key::KpDivide:
+            systemKey = VK_DIVIDE;
+            break;
+        case GLFW::Key::KpMultiply:
+            systemKey = VK_MULTIPLY;
+            break;
+        case GLFW::Key::KpSubtract:
+            systemKey = VK_SUBTRACT;
+            break;
+        case GLFW::Key::KpAdd:
+            systemKey = VK_ADD;
+            break;
+        case GLFW::Key::KpEnter:
+            systemKey = VK_RETURN;
+            break;
+        //case GLFW::Key::KpEqual:
+        //	systemKey = VK_KP_EQUAL;
+        //	break;
+        case GLFW::Key::LeftShift:
+            systemKey = VK_LSHIFT;
+            break;
+        case GLFW::Key::LeftControl:
+            systemKey = VK_LCONTROL;
+            break;
+        case GLFW::Key::LeftAlt:
+            systemKey = VK_MENU;
+            break;
+        case GLFW::Key::LeftSuper:
+            systemKey = VK_LWIN;
+            break;
+        case GLFW::Key::RightShift:
+            systemKey = VK_LSHIFT;
+            break;
+        case GLFW::Key::RightControl:
+            systemKey = VK_LCONTROL;
+            break;
+        case GLFW::Key::RightAlt:
+            systemKey = VK_MENU;
+            break;
+        case GLFW::Key::RightSuper:
+            systemKey = VK_RWIN;
+            break;
+        case GLFW::Key::Menu:
+            systemKey = VK_MENU;
+            break;
+#else
+    // Linux Equivalent
+    case GLFW::Key::Escape:
+        systemKey = KEY_ESC;
+        break;
+    case GLFW::Key::Enter:
+        systemKey = KEY_ENTER;
+        break;
+    case GLFW::Key::Tab:
+        systemKey = KEY_TAB;
+        break;
+    case GLFW::Key::Backspace:
+        systemKey = KEY_BACKSPACE;
+        break;
+    case GLFW::Key::Insert:
+        systemKey = KEY_INSERT;
+        break;
+    case GLFW::Key::Delete:
+        systemKey = KEY_DELETE;
+        break;
+    case GLFW::Key::Right:
+        systemKey = KEY_RIGHT;
+        break;
+    case GLFW::Key::Left:
+        systemKey = KEY_LEFT;
+        break;
+    case GLFW::Key::Down:
+        systemKey = KEY_DOWN;
+        break;
+    case GLFW::Key::Up:
+        systemKey = KEY_UP;
+        break;
+    case GLFW::Key::PageUp:
+        systemKey = KEY_PAGEUP;
+        break;
+    case GLFW::Key::PageDown:
+        systemKey = KEY_PAGEDOWN;
+        break;
+    case GLFW::Key::Home:
+        systemKey = KEY_HOME;
+        break;
+    case GLFW::Key::End:
+        systemKey = KEY_END;
+        break;
+    case GLFW::Key::CapsLock:
+        systemKey = KEY_CAPSLOCK;
+        break;
+    case GLFW::Key::ScrollLock:
+        systemKey = KEY_SCROLLLOCK;
+        break;
+    case GLFW::Key::NumLock:
+        systemKey = KEY_NUMLOCK;
+        break;
+    case GLFW::Key::PrintScreen:
+        systemKey = KEY_PRINT;
+        break;
+    case GLFW::Key::Pause:
+        systemKey = KEY_PAUSE;
+        break;
+    case GLFW::Key::F1:
+        systemKey = KEY_F1;
+        break;
+    case GLFW::Key::F2:
+        systemKey = KEY_F2;
+        break;
+    case GLFW::Key::F3:
+        systemKey = KEY_F3;
+        break;
+    case GLFW::Key::F4:
+        systemKey = KEY_F4;
+        break;
+    case GLFW::Key::F5:
+        systemKey = KEY_F5;
+        break;
+    case GLFW::Key::F6:
+        systemKey = KEY_F6;
+        break;
+    case GLFW::Key::F7:
+        systemKey = KEY_F7;
+        break;
+    case GLFW::Key::F8:
+        systemKey = KEY_F8;
+        break;
+    case GLFW::Key::F9:
+        systemKey = KEY_F9;
+        break;
+    case GLFW::Key::F10:
+        systemKey = KEY_F10;
+        break;
+    case GLFW::Key::F11:
+        systemKey = KEY_F11;
+        break;
+    case GLFW::Key::F12:
+        systemKey = KEY_F12;
+        break;
+    case GLFW::Key::F13:
+        systemKey = KEY_F13;
+        break;
+    case GLFW::Key::F14:
+        systemKey = KEY_F14;
+        break;
+    case GLFW::Key::F15:
+        systemKey = KEY_F15;
+        break;
+    case GLFW::Key::F16:
+        systemKey = KEY_F16;
+        break;
+    case GLFW::Key::F17:
+        systemKey = KEY_F17;
+        break;
+    case GLFW::Key::F18:
+        systemKey = KEY_F18;
+        break;
+    case GLFW::Key::F19:
+        systemKey = KEY_F19;
+        break;
+    case GLFW::Key::F20:
+        systemKey = KEY_F20;
+        break;
+    case GLFW::Key::F21:
+        systemKey = KEY_F21;
+        break;
+    case GLFW::Key::F22:
+        systemKey = KEY_F22;
+        break;
+    case GLFW::Key::F23:
+        systemKey = KEY_F23;
+        break;
+    case GLFW::Key::F24:
+        systemKey = KEY_F24;
+        break;
+    //case GLFW::Key::F25:
+    //	systemKey = VK_F25;
+    //	break;
+    case GLFW::Key::Kp0:
+        systemKey = KEY_KP0;
+        break;
+    case GLFW::Key::Kp1:
+        systemKey = KEY_KP1;
+        break;
+    case GLFW::Key::Kp2:
+        systemKey = KEY_KP2;
+        break;
+    case GLFW::Key::Kp3:
+        systemKey = KEY_KP3;
+        break;
+    case GLFW::Key::Kp4:
+        systemKey = KEY_KP4;
+        break;
+    case GLFW::Key::Kp5:
+        systemKey = KEY_KP5;
+        break;
+    case GLFW::Key::Kp6:
+        systemKey = KEY_KP6;
+        break;
+    case GLFW::Key::Kp7:
+        systemKey = KEY_KP7;
+        break;
+    case GLFW::Key::Kp8:
+        systemKey = KEY_KP8;
+        break;
+    case GLFW::Key::Kp9:
+        systemKey = KEY_KP9;
+        break;
+    case GLFW::Key::KpDecimal:
+        systemKey = KEY_KPDOT;
+        break;
+    case GLFW::Key::KpDivide:
+        systemKey = KEY_KPSLASH;
+        break;
+    case GLFW::Key::KpMultiply:
+        systemKey = KEY_KPASTERISK;
+        break;
+    case GLFW::Key::KpSubtract:
+        systemKey = KEY_KPMINUS;
+        break;
+    case GLFW::Key::KpAdd:
+        systemKey = KEY_KPPLUS;
+        break;
+    case GLFW::Key::KpEnter:
+        systemKey = KEY_KPENTER;
+        break;
+    //case GLFW::Key::KpEqual:
+    //	systemKey = VK_KP_EQUAL;
+    //	break;
+    case GLFW::Key::LeftShift:
+        systemKey = KEY_LEFTSHIFT;
+        break;
+    case GLFW::Key::LeftControl:
+        systemKey = KEY_LEFTCTRL;
+        break;
+    case GLFW::Key::LeftAlt:
+        systemKey = KEY_LEFTALT;
+        break;
+    case GLFW::Key::LeftSuper:
+        systemKey = KEY_LEFTMETA;
+        break;
+    case GLFW::Key::RightShift:
+        systemKey = KEY_RIGHTSHIFT;
+        break;
+    case GLFW::Key::RightControl:
+        systemKey = KEY_LEFTCTRL; //separate key here?
+        break;
+    case GLFW::Key::RightAlt:
+        systemKey = KEY_RIGHTALT;
+        break;
+    case GLFW::Key::RightSuper:
+        systemKey = KEY_RIGHTMETA;
+        break;
+    case GLFW::Key::Menu:
+        systemKey = KEY_MENU;
+        break;
+#endif
 		default:
 		{
 			if(systemKey == -1)
