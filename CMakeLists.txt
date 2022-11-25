@@ -26,6 +26,8 @@ add_include_dir(cmaterialsystem)
 link_generic_module_libraries()
 register_pragma_module(${PROJ_NAME})
 
+set(DEPENDENCY_PR_CHROMIUM_WRAPPER_LIBRARY "${CMAKE_CURRENT_BINARY_DIR}/external_libs/pr_chromium_wrapper/${PR_MODULE_INSTALL_SUBDIR}/${OS_LIB_BIN_PRE}pr_chromium_wrapper${OS_LIB_SHARED_EXT}" CACHE STRING "" FORCE)
+
 add_subdirectory("external_libs/pr_chromium_wrapper")
 
 if(WIN32)
@@ -44,8 +46,6 @@ if(is_multi_config)
 else()
     set(PR_MODULE_INSTALL_SUBDIR "")
 endif()
-
-set(DEPENDENCY_PR_CHROMIUM_WRAPPER_LIBRARY "${CMAKE_CURRENT_BINARY_DIR}/external_libs/pr_chromium_wrapper/${PR_MODULE_INSTALL_SUBDIR}/${OS_LIB_BIN_PRE}pr_chromium_wrapper${OS_LIB_SHARED_EXT}" CACHE STRING "" FORCE)
 
 add_dependencies(${PROJ_NAME} pr_chromium_wrapper pr_chromium_subprocess)
 
