@@ -37,6 +37,7 @@ else()
 endif()
 
 set(DEPENDENCY_PR_CHROMIUM_WRAPPER_LIBRARY "${CMAKE_CURRENT_BINARY_DIR}/external_libs/pr_chromium_wrapper/${CONFIG_BUILD_TYPE}/pr_chromium_wrapper${OS_LIB_SHARED_EXT}" CACHE STRING "" FORCE)
+set(DEPENDENCY_CEF_LOCATION "" CACHE STRING "")
 
 add_subdirectory("external_libs/pr_chromium_wrapper")
 

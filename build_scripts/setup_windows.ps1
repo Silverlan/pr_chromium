@@ -27,3 +27,4 @@ echo "Done!"
 
 $global:cmakeArgs += " -DDEPENDENCY_CHROMIUM_INCLUDE=`"$cefRoot`" -DDEPENDENCY_CHROMIUM_LIBRARY=`"$cefRoot/Release/libcef.lib`" "
 $global:cmakeArgs += " -DDEPENDENCY_LIBCEF_DLL_WRAPPER_LIBRARY=`"$cefRoot/build/libcef_dll_wrapper/Release/libcef_dll_wrapper.lib`" "
+$global:cmakeArgs += " -DDEPENDENCY_CEF_LOCATION=`"$cefRoot`" "
