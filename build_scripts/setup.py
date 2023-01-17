@@ -21,14 +21,18 @@ print_msg("Building CEF...")
 os.chdir(cefRoot)
 mkdir("build",cd=True)
 cmake_configure("..",generator)
-cmake_build("Release",["libcef_dll_wrapper"])
+cmake_build("Debug",["libcef_dll_wrapper"])
 
 cmake_args.append("-DDEPENDENCY_CHROMIUM_INCLUDE=" +cefRoot +"")
 cmake_args.append("-DDEPENDENCY_CEF_LOCATION=" +cefRoot +"")
 
 if platform == "linux":
-	cmake_args.append("-DDEPENDENCY_CHROMIUM_LIBRARY=" +cefRoot +"/Release/libcef.so")
-	cmake_args.append("-DDEPENDENCY_LIBCEF_DLL_WRAPPER_LIBRARY=" +cefRoot +"/build/libcef_dll_wrapper/libcef_dll_wrapper.a")
+	cmake_args.append("-DDEPENDENCY_CHROMIUM_LIBRARY=" +cefRoot +"/Debug/libcef.so")
+	if(generator=="Ninja Multi-Config"):
+		cmake_args.append("-DDEPENDENCY_LIBCEF_DLL_WRAPPER_LIBRARY=" +cefRoot +"/build/libcef_dll_wrapper/Debug/libcef_dll_wrapper.a")
+	else:
+		cmake_args.append("-DDEPENDENCY_LIBCEF_DLL_WRAPPER_LIBRARY=" +cefRoot +"/build/libcef_dll_wrapper/libcef_dll_wrapper.a")
+
 else:
-	cmake_args.append("-DDEPENDENCY_CHROMIUM_LIBRARY=" +cefRoot +"/Release/libcef.lib")
-	cmake_args.append("-DDEPENDENCY_LIBCEF_DLL_WRAPPER_LIBRARY=" +cefRoot +"/build/libcef_dll_wrapper/Release/libcef_dll_wrapper.lib")
+	cmake_args.append("-DDEPENDENCY_CHROMIUM_LIBRARY=" +cefRoot +"/Debug/libcef.lib")
+	cmake_args.append("-DDEPENDENCY_LIBCEF_DLL_WRAPPER_LIBRARY=" +cefRoot +"/build/libcef_dll_wrapper/Debug/libcef_dll_wrapper.lib")
