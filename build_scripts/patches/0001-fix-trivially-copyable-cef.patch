@@ -1,0 +1,12 @@
+diff -rupN cef_orig/include/base/cef_template_util.h cef_patch/include/base/cef_template_util.h
+--- cef_orig/include/base/cef_template_util.h	2023-02-18 05:01:36.000000000 +0100
++++ cef_patch/include/base/cef_template_util.h	2023-02-27 12:33:57.179831476 +0100
+@@ -169,7 +169,7 @@ struct is_trivially_copyable {
+ // TODO(danakj): Remove this when android builders are all using a newer version
+ // of gcc, or the android ndk is updated to a newer libc++ that does this for
+ // us.
+-#if _GNUC_VER >= 501
++#if _GNUC_VER >= 501 || __clang_major__ >= 10
+   static constexpr bool value = __is_trivially_copyable(T);
+ #else
+   static constexpr bool value =
