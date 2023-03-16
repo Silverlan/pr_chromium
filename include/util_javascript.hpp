@@ -6,24 +6,10 @@
 #include <vector>
 #include <memory>
 
-namespace cef
-{
-	enum class JSValueType : uint32_t
-	{
-		Undefined = 0,
-		Null,
-		Bool,
-		Int,
-		Double,
-		Date,
-		String,
-		Object,
-		Array,
-		Function
-	};
+namespace cef {
+	enum class JSValueType : uint32_t { Undefined = 0, Null, Bool, Int, Double, Date, String, Object, Array, Function };
 
-	struct JSValue
-	{
+	struct JSValue {
 		JSValueType type;
 		void *data = nullptr;
 	};
