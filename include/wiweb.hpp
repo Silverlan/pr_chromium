@@ -11,10 +11,8 @@
 #define DLLEXPORT __declspec(dllexport)
 #endif
 
-class DLLEXPORT WIWeb
-	: public WITexturedRect
-{
-public:
+class DLLEXPORT WIWeb : public WITexturedRect {
+  public:
 	static void register_callbacks();
 
 	WIWeb();
@@ -24,11 +22,11 @@ public:
 
 	virtual void OnCursorEntered() override;
 	virtual void OnCursorExited() override;
-	virtual void OnCursorMoved(int x,int y) override;
-	virtual util::EventReply MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods) override;
+	virtual void OnCursorMoved(int x, int y) override;
+	virtual util::EventReply MouseCallback(GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods) override;
 	virtual util::EventReply OnDoubleClick() override;
-	virtual util::EventReply KeyboardCallback(GLFW::Key key,int scanCode,GLFW::KeyState state,GLFW::Modifier mods) override;
-	virtual util::EventReply CharCallback(unsigned int c,GLFW::Modifier mods=GLFW::Modifier::None) override;
+	virtual util::EventReply KeyboardCallback(GLFW::Key key, int scanCode, GLFW::KeyState state, GLFW::Modifier mods) override;
+	virtual util::EventReply CharCallback(unsigned int c, GLFW::Modifier mods = GLFW::Modifier::None) override;
 	virtual util::EventReply ScrollCallback(Vector2 offset) override;
 	virtual void OnFocusGained() override;
 	virtual void OnFocusKilled() override;
@@ -62,12 +60,12 @@ public:
 	void ExecuteJavaScript(const std::string &js);
 
 	void SetInitialUrl(std::string url);
-	std::string GetUrl() const {return m_url;}
+	std::string GetUrl() const { return m_url; }
 
 	cef::CWebRenderHandler *GetRenderer();
 	cef::CWebBrowserClient *GetBrowserClient();
 	cef::CWebBrowser *GetBrowser();
-private:
+  private:
 	bool InitializeChromiumBrowser();
 	bool Resize();
 	void ClearTexture();

@@ -1,11 +1,9 @@
 #ifndef __LCHROMIUM_HPP__
 #define __LCHROMIUM_HPP
 
-namespace Lua
-{
+namespace Lua {
 	class Interface;
-	namespace chromium
-	{
+	namespace chromium {
 		void register_library(Lua::Interface &l);
 	}
 };
