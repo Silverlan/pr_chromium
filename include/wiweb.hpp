@@ -27,7 +27,7 @@ class DLLEXPORT WIWeb : public WITexturedRect {
 	virtual util::EventReply OnDoubleClick() override;
 	virtual util::EventReply KeyboardCallback(GLFW::Key key, int scanCode, GLFW::KeyState state, GLFW::Modifier mods) override;
 	virtual util::EventReply CharCallback(unsigned int c, GLFW::Modifier mods = GLFW::Modifier::None) override;
-	virtual util::EventReply ScrollCallback(Vector2 offset) override;
+	virtual util::EventReply ScrollCallback(Vector2 offset, bool offsetAsPixels = false) override;
 	virtual void OnFocusGained() override;
 	virtual void OnFocusKilled() override;
 	virtual void DoUpdate() override;

@@ -438,7 +438,16 @@ cef::CWebBrowser *WIWeb::GetBrowser() { return m_browser.get(); }
 
 void WIWeb::OnCursorEntered() { WIBase::OnCursorEntered(); }
 void WIWeb::OnCursorExited() { WIBase::OnCursorExited(); }
-Vector2i WIWeb::GetBrowserMousePos() const { return {m_mousePos.x / static_cast<float>(GetWidth()) * m_browserViewSize.x, m_mousePos.y / static_cast<float>(GetHeight()) * m_browserViewSize.y}; }
+Vector2i WIWeb::GetBrowserMousePos() const
+{
+	auto *window = GetRootWindow();
+	if(window && (*window)->GetCursorPosOverride()) {
+		int x, y;
+		GetMousePos(&x, &y);
+		return {x, y};
+	}
+	return {m_mousePos.x / static_cast<float>(GetWidth()) * m_browserViewSize.x, m_mousePos.y / static_cast<float>(GetHeight()) * m_browserViewSize.y};
+}
 void WIWeb::OnCursorMoved(int x, int y)
 {
 	m_mousePos = {x, y};
@@ -981,14 +990,18 @@ util::EventReply WIWeb::CharCallback(unsigned int c, GLFW::Modifier mods)
 	cef::get_wrapper().browser_send_event_char(browser, c, get_cef_modifiers(mods) | m_buttonMods);
 	return util::EventReply::Handled;
 }
-util::EventReply WIWeb::ScrollCallback(Vector2 offset)
+util::EventReply WIWeb::ScrollCallback(Vector2 offset, bool offsetAsPixels)
 {
-	WIBase::ScrollCallback(offset);
+	WIBase::ScrollCallback(offset, offsetAsPixels);
 	auto *browser = GetBrowser();
 	if(browser == nullptr)
 		return util::EventReply::Unhandled;
 	auto brMousePos = GetBrowserMousePos();
-	cef::get_wrapper().browser_send_event_mouse_wheel(browser, brMousePos.x, brMousePos.y, offset.x * 5.f, offset.y * 5.f);
+	if(!offsetAsPixels)
+		offset *= 5.f;
+	else
+		offset /= 10.f;
+	cef::get_wrapper().browser_send_event_mouse_wheel(browser, brMousePos.x, brMousePos.y, offset.x, offset.y);
 	return util::EventReply::Handled;
 }
 void WIWeb::OnFocusGained()
