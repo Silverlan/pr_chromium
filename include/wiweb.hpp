@@ -69,6 +69,7 @@ class DLLEXPORT WIWeb : public WITexturedRect {
 	bool InitializeChromiumBrowser();
 	bool Resize();
 	void ClearTexture();
+	void CloseBrowserSafely();
 
 	std::string m_initialUrl = "https://pragma-engine.com/";
 	std::string m_url;

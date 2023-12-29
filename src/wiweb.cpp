@@ -3,6 +3,7 @@
 #include <image/prosper_sampler.hpp>
 #include <buffers/prosper_buffer.hpp>
 #include <pragma/lua/libraries/c_gui_callbacks.hpp>
+// #include <pragma/engine.h>
 #include "wiweb.hpp"
 #include <prosper_window.hpp>
 #include <fsys/filesystem.h>
@@ -71,10 +72,32 @@ WIWeb::WIWeb() : WITexturedRect()
 
 WIWeb::~WIWeb()
 {
+	Close();
+	ClearTexture();
+	//CloseBrowserSafely();
 	m_browser = nullptr;
 	m_browserClient = nullptr;
 	m_webRenderer = nullptr;
-	ClearTexture();
+}
+
+void WIWeb::CloseBrowserSafely()
+{
+	auto *browser = GetBrowser();
+	if(browser == nullptr)
+		return;
+	cef::get_wrapper().browser_try_close(browser);
+	/*auto cb = FunctionCallback<void>::Create(nullptr);
+	cb.get<Callback<void>>()->SetFunction([browser = std::move(m_browser), browserClient = std::move(m_browserClient), webRenderer = std::move(m_webRenderer), cb]() mutable {
+		if(cef::get_wrapper().browser_try_close(browser.get())) {
+			// Close complete
+			browser = nullptr;
+			browserClient = nullptr;
+			webRenderer = nullptr;
+			if(cb.IsValid())
+				cb.Remove();
+		}
+	});
+	pragma::get_engine()->AddCallback("Think", cb);*/
 }
 
 void WIWeb::Initialize()
