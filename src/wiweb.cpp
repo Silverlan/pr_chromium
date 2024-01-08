@@ -7,6 +7,7 @@
 #include "wiweb.hpp"
 #include <prosper_window.hpp>
 #include <fsys/filesystem.h>
+#include <wgui/types/wiroot.h>
 #include <memory>
 
 #if __linux__
@@ -463,8 +464,8 @@ void WIWeb::OnCursorEntered() { WIBase::OnCursorEntered(); }
 void WIWeb::OnCursorExited() { WIBase::OnCursorExited(); }
 Vector2i WIWeb::GetBrowserMousePos() const
 {
-	auto *window = GetRootWindow();
-	if(window && (*window)->GetCursorPosOverride()) {
+	auto *elRoot = GetBaseRootElement();
+	if(elRoot && elRoot->GetCursorPosOverride()) {
 		int x, y;
 		GetMousePos(&x, &y);
 		return {x, y};
