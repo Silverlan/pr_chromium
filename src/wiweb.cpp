@@ -3,9 +3,11 @@
 #include <image/prosper_sampler.hpp>
 #include <buffers/prosper_buffer.hpp>
 #include <pragma/lua/libraries/c_gui_callbacks.hpp>
+// #include <pragma/engine.h>
 #include "wiweb.hpp"
 #include <prosper_window.hpp>
 #include <fsys/filesystem.h>
+#include <wgui/types/wiroot.h>
 #include <memory>
 
 #if __linux__
@@ -71,10 +73,32 @@ WIWeb::WIWeb() : WITexturedRect()
 
 WIWeb::~WIWeb()
 {
+	Close();
+	ClearTexture();
+	//CloseBrowserSafely();
 	m_browser = nullptr;
 	m_browserClient = nullptr;
 	m_webRenderer = nullptr;
-	ClearTexture();
+}
+
+void WIWeb::CloseBrowserSafely()
+{
+	auto *browser = GetBrowser();
+	if(browser == nullptr)
+		return;
+	cef::get_wrapper().browser_try_close(browser);
+	/*auto cb = FunctionCallback<void>::Create(nullptr);
+	cb.get<Callback<void>>()->SetFunction([browser = std::move(m_browser), browserClient = std::move(m_browserClient), webRenderer = std::move(m_webRenderer), cb]() mutable {
+		if(cef::get_wrapper().browser_try_close(browser.get())) {
+			// Close complete
+			browser = nullptr;
+			browserClient = nullptr;
+			webRenderer = nullptr;
+			if(cb.IsValid())
+				cb.Remove();
+		}
+	});
+	pragma::get_engine()->AddCallback("Think", cb);*/
 }
 
 void WIWeb::Initialize()
@@ -438,7 +462,16 @@ cef::CWebBrowser *WIWeb::GetBrowser() { return m_browser.get(); }
 
 void WIWeb::OnCursorEntered() { WIBase::OnCursorEntered(); }
 void WIWeb::OnCursorExited() { WIBase::OnCursorExited(); }
-Vector2i WIWeb::GetBrowserMousePos() const { return {m_mousePos.x / static_cast<float>(GetWidth()) * m_browserViewSize.x, m_mousePos.y / static_cast<float>(GetHeight()) * m_browserViewSize.y}; }
+Vector2i WIWeb::GetBrowserMousePos() const
+{
+	auto *elRoot = GetBaseRootElement();
+	if(elRoot && elRoot->GetCursorPosOverride()) {
+		int x, y;
+		GetMousePos(&x, &y);
+		return {x, y};
+	}
+	return {m_mousePos.x / static_cast<float>(GetWidth()) * m_browserViewSize.x, m_mousePos.y / static_cast<float>(GetHeight()) * m_browserViewSize.y};
+}
 void WIWeb::OnCursorMoved(int x, int y)
 {
 	m_mousePos = {x, y};
@@ -981,14 +1014,18 @@ util::EventReply WIWeb::CharCallback(unsigned int c, GLFW::Modifier mods)
 	cef::get_wrapper().browser_send_event_char(browser, c, get_cef_modifiers(mods) | m_buttonMods);
 	return util::EventReply::Handled;
 }
-util::EventReply WIWeb::ScrollCallback(Vector2 offset)
+util::EventReply WIWeb::ScrollCallback(Vector2 offset, bool offsetAsPixels)
 {
-	WIBase::ScrollCallback(offset);
+	WIBase::ScrollCallback(offset, offsetAsPixels);
 	auto *browser = GetBrowser();
 	if(browser == nullptr)
 		return util::EventReply::Unhandled;
 	auto brMousePos = GetBrowserMousePos();
-	cef::get_wrapper().browser_send_event_mouse_wheel(browser, brMousePos.x, brMousePos.y, offset.x * 5.f, offset.y * 5.f);
+	if(!offsetAsPixels)
+		offset *= 5.f;
+	else
+		offset /= 10.f;
+	cef::get_wrapper().browser_send_event_mouse_wheel(browser, brMousePos.x, brMousePos.y, offset.x, offset.y);
 	return util::EventReply::Handled;
 }
 void WIWeb::OnFocusGained()
