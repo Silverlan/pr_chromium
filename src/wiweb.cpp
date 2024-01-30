@@ -498,6 +498,7 @@ util::EventReply WIWeb::MouseCallback(GLFW::MouseButton button, GLFW::KeyState s
 	switch(button) {
 	case GLFW::MouseButton::Left:
 		umath::set_flag(m_buttonMods, cef::Modifier::LeftMouseButton, state == GLFW::KeyState::Press);
+		RequestFocus();
 		break;
 	case GLFW::MouseButton::Right:
 		umath::set_flag(m_buttonMods, cef::Modifier::RightMouseButton, state == GLFW::KeyState::Press);
