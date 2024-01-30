@@ -110,9 +110,9 @@ void WIWeb::Initialize()
 	SetScrollInputEnabled(true);
 }
 
-void WIWeb::Think()
+void WIWeb::Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd)
 {
-	WIBase::Think();
+	WIBase::Think(drawCmd);
 	if(m_browserClient == nullptr)
 		return;
 	cef::get_wrapper().do_message_loop_work();
