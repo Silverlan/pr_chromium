@@ -1003,7 +1003,7 @@ util::EventReply WIWeb::KeyboardCallback(GLFW::Key key, int scanCode, GLFW::KeyS
 	auto cefMods = get_cef_modifiers(mods) | m_buttonMods;
 	if(state == GLFW::KeyState::Repeat)
 		cefMods |= cef::Modifier::IsRepeat;
-	cef::get_wrapper().browser_send_event_key(browser, c.has_value() ? *c : systemKey, systemKey, systemKey, press, cefMods);
+	cef::get_wrapper().browser_send_event_key(browser, c.has_value() ? *c : systemKey, systemKey, scanCode, press, cefMods);
 	return util::EventReply::Handled;
 }
 util::EventReply WIWeb::CharCallback(unsigned int c, GLFW::Modifier mods)
