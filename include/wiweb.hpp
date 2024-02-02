@@ -18,7 +18,7 @@ class DLLEXPORT WIWeb : public WITexturedRect {
 	WIWeb();
 	virtual ~WIWeb() override;
 	virtual void Initialize() override;
-	virtual void Think() override;
+	virtual void Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd) override;
 
 	virtual void OnCursorEntered() override;
 	virtual void OnCursorExited() override;
