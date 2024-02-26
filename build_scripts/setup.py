@@ -3,6 +3,8 @@ from sys import platform
 import tarfile
 from pathlib import Path
 from urllib.parse import quote
+import shutil
+import subprocess
 
 
 os.chdir(deps_dir)
@@ -19,6 +21,14 @@ if not Path(cefRoot).is_dir():
 	print_msg("CEF not found. Downloading...")
 	tarName = "cef_binary_"+cefVer+"_" +suffix +".tar"
 	http_extract("https://cef-builds.spotifycdn.com/"+quote(cefVer)+"_" +suffix +".tar.bz2",tarName,"tar.bz2")
+
+	if platform == "linux":
+		shutil.rmtree(cefRoot+"/Debug")
+		os.chdir(cefRoot+"/Release")
+		subprocess.run(["strip","--strip-unneeded","libcef.so"])
+		os.chdir(deps_dir)
+        
+    
 
 
 if platform == "linux":
