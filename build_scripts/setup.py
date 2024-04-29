@@ -23,7 +23,6 @@ if not Path(cefRoot).is_dir():
 	http_extract("https://cef-builds.spotifycdn.com/"+quote(cefVer)+"_" +suffix +".tar.bz2",tarName,"tar.bz2")
 
 	if platform == "linux":
-		shutil.rmtree(cefRoot+"/Debug")
 		os.chdir(cefRoot+"/Release")
 		subprocess.run(["strip","--strip-unneeded","libcef.so"])
 		os.chdir(deps_dir)
