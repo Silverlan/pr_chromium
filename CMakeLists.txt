@@ -1,49 +1,20 @@
-cmake_minimum_required(VERSION 3.12)
-
-include("../CMakeShared.txt")
+include(${CMAKE_SOURCE_DIR}/cmake/pr_common.cmake)
 
 set(PROJ_NAME pr_chromium)
+pr_add_library(${PROJ_NAME} SHARED)
 
-project(${PROJ_NAME} CXX)
+pr_add_dependency(${PROJ_NAME} iclient TARGET PUBLIC)
+pr_add_dependency(${PROJ_NAME} ishared TARGET PUBLIC)
 
-# set(PRECOMPILED_HEADER "stdafx")
-
-link_external_library(iclient)
-link_external_library(glfw)
-link_external_library(iglfw)
-link_external_library(prosper)
-link_external_library(client)
-link_external_library(wgui)
-add_external_library(luajit)
-if(WIN32)
-	add_external_library(lua)
-endif()
-
-add_include_dir(glm)
-add_include_dir(materialsystem)
-add_include_dir(cmaterialsystem)
-
-link_generic_module_libraries()
-register_pragma_module(${PROJ_NAME})
-
-if(WIN32)
-	set(OS_LIB_BIN_EXT ".dll")
-	set(OS_LIB_SHARED_EXT ".lib")
-	set(OS_EXE_EXT ".exe")
-else()
-	set(OS_LIB_BIN_EXT ".so")
-	set(OS_LIB_SHARED_EXT ".so")
-	set(OS_EXE_EXT "")
-endif()
-
-search_lib_recursive(DEPENDENCY_PR_CHROMIUM_WRAPPER_LIBRARY external_libs/pr_chromium_wrapper/${BINARY_PRAGMA_DIR} pr_chromium_wrapper)
+pr_add_headers(${PROJ_NAME} "include/")
+pr_add_sources(${PROJ_NAME} "src/")
 
 add_subdirectory("external_libs/pr_chromium_wrapper")
-
-add_dependencies(${PROJ_NAME} pr_chromium_wrapper pr_chromium_subprocess)
+pr_add_dependency(${PROJ_NAME} pr_chromium_wrapper TARGET PUBLIC)
+add_dependencies(${PROJ_NAME} pr_chromium_subprocess)
 
 set_target_properties(pr_chromium PROPERTIES FOLDER modules/chromium)
 set_target_properties(pr_chromium_wrapper PROPERTIES FOLDER modules/chromium)
 set_target_properties(pr_chromium_subprocess PROPERTIES FOLDER modules/chromium)
 
-set_property(GLOBAL PROPERTY PRAGMA_MODULE_SKIP_TARGET_PROPERTY_FOLDER 1)
+pr_finalize(${PROJ_NAME} FOLDER modules/chromium)
