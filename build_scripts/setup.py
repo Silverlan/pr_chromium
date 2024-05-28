@@ -6,7 +6,6 @@ from urllib.parse import quote
 import shutil
 import subprocess
 
-
 os.chdir(deps_dir)
 
 ########## CEF ##########
@@ -26,9 +25,6 @@ if not Path(cefRoot).is_dir():
 		os.chdir(cefRoot+"/Release")
 		subprocess.run(["strip","--strip-unneeded","libcef.so"])
 		os.chdir(deps_dir)
-        
-    
-
 
 if platform == "linux":
 	import patch
@@ -43,6 +39,8 @@ mkdir("build",cd=True)
 cmake_configure("..",generator,["-DCMAKE_BUILD_TYPE=Release"])
 cmake_build("Release",["libcef_dll_wrapper"])
 
+# Note: DEPENDENCY_CHROMIUM_INCLUDE is intentionally not pointing to the "include" directory, because CEF
+# treats the parent directory as include directory instead.
 cmake_args.append("-DDEPENDENCY_CHROMIUM_INCLUDE=" +cefRoot +"")
 cmake_args.append("-DDEPENDENCY_CEF_LOCATION=" +cefRoot +"")
 
@@ -52,7 +50,6 @@ if platform == "linux":
 		cmake_args.append("-DDEPENDENCY_LIBCEF_DLL_WRAPPER_LIBRARY=" +cefRoot +"/build/libcef_dll_wrapper/Release/libcef_dll_wrapper.a")
 	else:
 		cmake_args.append("-DDEPENDENCY_LIBCEF_DLL_WRAPPER_LIBRARY=" +cefRoot +"/build/libcef_dll_wrapper/libcef_dll_wrapper.a")
-
 else:
 	cmake_args.append("-DDEPENDENCY_CHROMIUM_LIBRARY=" +cefRoot +"/Release/libcef.lib")
 	cmake_args.append("-DDEPENDENCY_LIBCEF_DLL_WRAPPER_LIBRARY=" +cefRoot +"/build/libcef_dll_wrapper/Release/libcef_dll_wrapper.lib")
