@@ -1,0 +1,6 @@
+{
+    "name": "Chromium",
+    "module_name": "pr_chromium",
+    "install_directory": "modules/chromium/",
+    "release_directory": "modules/chromium/"
+}
