@@ -68,12 +68,14 @@ class DLLEXPORT WIWeb : public WITexturedRect {
   private:
 	bool InitializeChromiumBrowser();
 	bool Resize();
+	void CopyDirtyRectsToImage(prosper::ICommandBuffer &drawCmd);
 	void ClearTexture();
 	void CloseBrowserSafely();
 
 	std::string m_initialUrl = "https://pragma-engine.com/";
 	std::string m_url;
 	std::shared_ptr<prosper::Texture> m_texture = nullptr;
+	std::shared_ptr<prosper::IBuffer> m_stagingBuffer = nullptr;
 	void *m_imgDataPtr = nullptr;
 	bool m_bTransparentBackground = false;
 	bool m_browserInitialized = false;

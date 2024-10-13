@@ -62,6 +62,8 @@ namespace cef {
 		void (*browser_was_resized)(cef::CWebBrowser *browser) = nullptr;
 
 		void (*render_handler_set_image_data)(cef::CWebRenderHandler *renderHandler, void *ptr, uint32_t w, uint32_t h) = nullptr;
+		void (*render_handler_get_dirty_rects)(cef::CWebRenderHandler *renderHandler, const std::tuple<int, int, int, int> **, uint32_t &) = nullptr;
+		void (*render_handler_clear_dirty_rects)(cef::CWebRenderHandler *renderHandler) = nullptr;
 		// Browser
 		void (*browser_load_url)(CWebBrowser *browser, const char *url) = nullptr;
 		bool (*browser_can_go_back)(CWebBrowser *browser) = nullptr;

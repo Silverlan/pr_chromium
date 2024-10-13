@@ -3,9 +3,11 @@
 #include <image/prosper_sampler.hpp>
 #include <buffers/prosper_buffer.hpp>
 #include <pragma/lua/libraries/c_gui_callbacks.hpp>
+#include <pragma/c_engine.h>
 // #include <pragma/engine.h>
 #include "wiweb.hpp"
 #include <prosper_window.hpp>
+#include <prosper_command_buffer.hpp>
 #include <fsys/filesystem.h>
 #include <wgui/types/wiroot.h>
 #include <memory>
@@ -13,6 +15,8 @@
 #if __linux__
 #include <linux/input-event-codes.h> //for key defines
 #endif
+
+extern DLLCLIENT CEngine *c_engine;
 
 LINK_WGUI_TO_CLASS(WIWeb, WIWeb);
 #pragma optimize("", off)
@@ -60,6 +64,9 @@ void WIWeb::register_callbacks()
 		});
 	});
 }
+
+static std::vector<WIWeb *> g_webElements {};
+static CallbackHandle g_preRecordGuiCb {};
 WIWeb::WIWeb() : WITexturedRect()
 {
 	RegisterCallback<void, uint32_t, util::Path>("OnDownloadStarted");
@@ -69,6 +76,17 @@ WIWeb::WIWeb() : WITexturedRect()
 	RegisterCallback<void, int, std::string, std::string>("OnLoadError");
 	RegisterCallback<void, int>("OnLoadStart");
 	RegisterCallback<void, bool, bool, bool>("OnLoadingStateChange");
+
+	if(g_webElements.empty()) {
+		g_preRecordGuiCb = c_engine->AddCallback("PreRecordGUI", FunctionCallback<void>::Create([]() {
+			auto &context = c_engine->GetRenderContext();
+			auto &window = c_engine->GetWindow();
+			auto &drawCmd = window.GetDrawCommandBuffer();
+			for(auto *el : g_webElements)
+				el->CopyDirtyRectsToImage(*drawCmd);
+		}));
+	}
+	g_webElements.push_back(this);
 }
 
 WIWeb::~WIWeb()
@@ -79,6 +97,12 @@ WIWeb::~WIWeb()
 	m_browser = nullptr;
 	m_browserClient = nullptr;
 	m_webRenderer = nullptr;
+
+	auto it = std::find(g_webElements.begin(), g_webElements.end(), this);
+	if(it != g_webElements.end())
+		g_webElements.erase(it);
+	if(g_webElements.empty() && g_preRecordGuiCb.IsValid())
+		g_preRecordGuiCb.Remove();
 }
 
 void WIWeb::CloseBrowserSafely()
@@ -115,6 +139,8 @@ void WIWeb::Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd
 	WIBase::Think(drawCmd);
 	if(m_browserClient == nullptr)
 		return;
+	if(m_webRenderer)
+		cef::get_wrapper().render_handler_clear_dirty_rects(m_webRenderer.get());
 	cef::get_wrapper().do_message_loop_work();
 }
 
@@ -123,7 +149,7 @@ void WIWeb::ClearTexture()
 	if(m_imgDataPtr) {
 		if(m_webRenderer)
 			cef::get_wrapper().render_handler_set_image_data(m_webRenderer.get(), nullptr, 0, 0);
-		m_texture->GetImage().Unmap();
+		m_stagingBuffer->Unmap();
 		m_imgDataPtr = nullptr;
 	}
 	m_texture = nullptr;
@@ -163,24 +189,72 @@ bool WIWeb::Resize()
 	imgCreateInfo.format = prosper::Format::R8G8B8A8_UNorm;
 	imgCreateInfo.width = m_browserViewSize.x;
 	imgCreateInfo.height = m_browserViewSize.y;
-	imgCreateInfo.memoryFeatures = prosper::MemoryFeatureFlags::CPUToGPU;
+	imgCreateInfo.memoryFeatures = prosper::MemoryFeatureFlags::GPUBulk;
 	imgCreateInfo.tiling = prosper::ImageTiling::Linear;
 	imgCreateInfo.usage = prosper::ImageUsageFlags::SampledBit;
 	imgCreateInfo.postCreateLayout = prosper::ImageLayout::ShaderReadOnlyOptimal;
+
 	auto img = context.CreateImage(imgCreateInfo);
 	prosper::util::ImageViewCreateInfo imgViewCreateInfo {};
 	imgViewCreateInfo.swizzleRed = prosper::ComponentSwizzle::B;
 	imgViewCreateInfo.swizzleBlue = prosper::ComponentSwizzle::R;
 	prosper::util::SamplerCreateInfo samplerCreateInfo {};
-	m_texture = context.CreateTexture({}, *img, imgViewCreateInfo, samplerCreateInfo);
-	if(m_texture == nullptr)
+	auto tex = context.CreateTexture({}, *img, imgViewCreateInfo, samplerCreateInfo);
+	if(tex == nullptr)
 		return false;
-	SetTexture(*m_texture);
 
-	img->Map(0ull, img->GetSize(), &m_imgDataPtr);
+	prosper::util::BufferCreateInfo bufCreateInfo {};
+	bufCreateInfo.size = imgCreateInfo.width * imgCreateInfo.height * prosper::util::get_pixel_size(imgCreateInfo.format);
+	bufCreateInfo.flags |= prosper::util::BufferCreateInfo::Flags::Persistent;
+	bufCreateInfo.memoryFeatures = prosper::MemoryFeatureFlags::CPUToGPU;
+
+	// Clear to white color
+	std::vector<std::array<uint8_t, 4>> clearColData;
+	auto clearCol = Color::White;
+	clearColData.resize(imgCreateInfo.width * imgCreateInfo.height, std::array<uint8_t, 4> {static_cast<uint8_t>(clearCol.r), static_cast<uint8_t>(clearCol.g), static_cast<uint8_t>(clearCol.b), static_cast<uint8_t>(clearCol.a)});
+
+	auto stagingBuffer = context.CreateBuffer(bufCreateInfo, clearColData.data());
+	if(!stagingBuffer)
+		return false;
+
+	m_texture = tex;
+	m_stagingBuffer = stagingBuffer;
+	SetTexture(*m_texture);
+	stagingBuffer->Map(0ull, stagingBuffer->GetSize(), prosper::IBuffer::MapFlags::WriteBit | prosper::IBuffer::MapFlags::PersistentBit, &m_imgDataPtr);
+
 	cef::get_wrapper().render_handler_set_image_data(m_webRenderer.get(), m_imgDataPtr, img->GetWidth(), img->GetHeight());
 	cef::get_wrapper().browser_was_resized(GetBrowser());
+	cef::get_wrapper().render_handler_clear_dirty_rects(m_webRenderer.get());
 	return true;
+}
+
+void WIWeb::CopyDirtyRectsToImage(prosper::ICommandBuffer &drawCmd)
+{
+	if(!m_webRenderer)
+		return;
+	const std::tuple<int, int, int, int> *dirtyRects;
+	uint32_t rectCount;
+	cef::get_wrapper().render_handler_get_dirty_rects(m_webRenderer.get(), &dirtyRects, rectCount);
+	if(rectCount == 0)
+		return;
+
+	auto &img = m_texture->GetImage();
+	drawCmd.RecordImageBarrier(img, prosper::ImageLayout::ShaderReadOnlyOptimal, prosper::ImageLayout::TransferDstOptimal);
+
+	prosper::util::BufferImageCopyInfo copyInfo {};
+	auto pixelSize = img.GetPixelSize();
+	for(uint32_t i = 0; i < rectCount; ++i) {
+		auto &rect = dirtyRects[i];
+		copyInfo.imageOffset = {std::get<0>(rect), std::get<1>(rect)};
+		copyInfo.imageExtent = Vector2i {std::get<2>(rect), std::get<3>(rect)};
+		copyInfo.bufferOffset = (copyInfo.imageOffset.y * img.GetWidth() + copyInfo.imageOffset.x) * pixelSize;
+		copyInfo.bufferExtent = Vector2i {img.GetWidth(), img.GetHeight()};
+
+		drawCmd.RecordCopyBufferToImage(copyInfo, *m_stagingBuffer, img);
+	}
+	cef::get_wrapper().render_handler_clear_dirty_rects(m_webRenderer.get());
+
+	drawCmd.RecordImageBarrier(img, prosper::ImageLayout::TransferDstOptimal, prosper::ImageLayout::ShaderReadOnlyOptimal);
 }
 
 bool WIWeb::InitializeChromiumBrowser()
