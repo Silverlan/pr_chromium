@@ -266,6 +266,13 @@ bool WIWeb::InitializeChromiumBrowser()
 	  [](cef::CWebRenderHandler *renderHandler, int &x, int &y, int &w, int &h) {
 		  auto &context = WGUI::GetInstance().GetContext();
 		  auto &window = context.GetWindow();
+		  if(!window.IsValid()) {
+			  x = 0;
+			  y = 0;
+			  w = 0;
+			  h = 0;
+			  return;
+		  }
 		  auto windowPos = window->GetPos();
 		  auto windowSize = window->GetSize();
 		  x = windowPos.x;
@@ -288,16 +295,18 @@ bool WIWeb::InitializeChromiumBrowser()
 
 		  auto &context = WGUI::GetInstance().GetContext();
 		  auto &window = context.GetWindow();
-		  auto windowPos = window->GetPos();
-		  auto pos = el->GetAbsolutePos();
-		  x = windowPos.x + pos.x;
-		  y = windowPos.y + pos.y;
+		  if(window.IsValid()) {
+			  auto windowPos = window->GetPos();
+			  auto pos = el->GetAbsolutePos();
+			  x = windowPos.x + pos.x;
+			  y = windowPos.y + pos.y;
+		  }
 	  },
 	  [](cef::CWebRenderHandler *renderHandler, int viewX, int viewY, int &screenX, int &screenY) {
 		  auto *el = static_cast<WIWeb *>(cef::get_wrapper().render_handler_get_user_data(renderHandler));
 		  auto &context = WGUI::GetInstance().GetContext();
 		  auto &window = context.GetWindow();
-		  auto windowPos = window->GetPos();
+		  auto windowPos = window.IsValid() ? window->GetPos() : Vector2i {0, 0};
 		  screenX = windowPos.x;
 		  screenY = windowPos.y;
 
