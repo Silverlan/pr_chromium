@@ -576,18 +576,18 @@ util::EventReply WIWeb::OnDoubleClick()
 	cef::get_wrapper().browser_send_event_mouse_click(browser, brMousePos.x, brMousePos.y, 'l', false, 2);
 	return util::EventReply::Handled;
 }
-util::EventReply WIWeb::MouseCallback(GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods)
+util::EventReply WIWeb::MouseCallback(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods)
 {
 	switch(button) {
-	case GLFW::MouseButton::Left:
-		umath::set_flag(m_buttonMods, cef::Modifier::LeftMouseButton, state == GLFW::KeyState::Press);
+	case pragma::platform::MouseButton::Left:
+		umath::set_flag(m_buttonMods, cef::Modifier::LeftMouseButton, state == pragma::platform::KeyState::Press);
 		RequestFocus();
 		break;
-	case GLFW::MouseButton::Right:
-		umath::set_flag(m_buttonMods, cef::Modifier::RightMouseButton, state == GLFW::KeyState::Press);
+	case pragma::platform::MouseButton::Right:
+		umath::set_flag(m_buttonMods, cef::Modifier::RightMouseButton, state == pragma::platform::KeyState::Press);
 		break;
-	case GLFW::MouseButton::Middle:
-		umath::set_flag(m_buttonMods, cef::Modifier::MiddleMouseButton, state == GLFW::KeyState::Press);
+	case pragma::platform::MouseButton::Middle:
+		umath::set_flag(m_buttonMods, cef::Modifier::MiddleMouseButton, state == pragma::platform::KeyState::Press);
 		break;
 	}
 
@@ -595,24 +595,24 @@ util::EventReply WIWeb::MouseCallback(GLFW::MouseButton button, GLFW::KeyState s
 	if(result == util::EventReply::Handled)
 		return result;
 	auto *browser = GetBrowser();
-	if(browser == nullptr || (state != GLFW::KeyState::Press && state != GLFW::KeyState::Release))
+	if(browser == nullptr || (state != pragma::platform::KeyState::Press && state != pragma::platform::KeyState::Release))
 		return util::EventReply::Unhandled;
 	auto brMousePos = GetBrowserMousePos();
 	char btType;
 	switch(button) {
-	case GLFW::MouseButton::Left:
+	case pragma::platform::MouseButton::Left:
 		btType = 'l';
 		break;
-	case GLFW::MouseButton::Right:
+	case pragma::platform::MouseButton::Right:
 		btType = 'r';
 		break;
-	case GLFW::MouseButton::Middle:
+	case pragma::platform::MouseButton::Middle:
 		btType = 'm';
 		break;
 	default:
 		return util::EventReply::Unhandled;
 	}
-	cef::get_wrapper().browser_send_event_mouse_click(browser, brMousePos.x, brMousePos.y, btType, (state == GLFW::KeyState::Press) ? false : true, 1);
+	cef::get_wrapper().browser_send_event_mouse_click(browser, brMousePos.x, brMousePos.y, btType, (state == pragma::platform::KeyState::Press) ? false : true, 1);
 
 	//auto frame = browser->GetMainFrame();
 	//frame->ExecuteJavaScript("function test() {alert('ExecuteJavaScript works!');}",frame->GetURL(),0);
@@ -620,20 +620,20 @@ util::EventReply WIWeb::MouseCallback(GLFW::MouseButton button, GLFW::KeyState s
 	//frame->GetV8Context()->GetGlobal()->GetValue("test")->ExecuteFunction();
 	return util::EventReply::Handled;
 }
-static cef::Modifier get_cef_modifiers(GLFW::Modifier mods)
+static cef::Modifier get_cef_modifiers(pragma::platform::Modifier mods)
 {
 	auto cefMods = cef::Modifier::None;
-	if(umath::is_flag_set(mods, GLFW::Modifier::Shift))
+	if(umath::is_flag_set(mods, pragma::platform::Modifier::Shift))
 		cefMods |= cef::Modifier::ShiftDown;
-	if(umath::is_flag_set(mods, GLFW::Modifier::Alt))
+	if(umath::is_flag_set(mods, pragma::platform::Modifier::Alt))
 		cefMods |= cef::Modifier::AltDown;
-	if(umath::is_flag_set(mods, GLFW::Modifier::Control))
+	if(umath::is_flag_set(mods, pragma::platform::Modifier::Control))
 		cefMods |= cef::Modifier::ControlDown;
-	if(umath::is_flag_set(mods, GLFW::Modifier::Super))
+	if(umath::is_flag_set(mods, pragma::platform::Modifier::Super))
 		cefMods |= cef::Modifier::CommandDown;
 	return cefMods;
 }
-util::EventReply WIWeb::KeyboardCallback(GLFW::Key key, int scanCode, GLFW::KeyState state, GLFW::Modifier mods)
+util::EventReply WIWeb::KeyboardCallback(pragma::platform::Key key, int scanCode, pragma::platform::KeyState state, pragma::platform::Modifier mods)
 {
 	WIBase::KeyboardCallback(key, scanCode, state, mods);
 	auto *browser = GetBrowser();
@@ -643,433 +643,433 @@ util::EventReply WIWeb::KeyboardCallback(GLFW::Key key, int scanCode, GLFW::KeyS
 	std::optional<char> c {};
 	switch(key) {
 #ifdef _WIN32
-	case GLFW::Key::Escape:
+	case pragma::platform::Key::Escape:
 		systemKey = VK_ESCAPE;
 		break;
-	case GLFW::Key::Enter:
+	case pragma::platform::Key::Enter:
 		systemKey = VK_RETURN;
 		break;
-	case GLFW::Key::Tab:
+	case pragma::platform::Key::Tab:
 		systemKey = VK_TAB;
 		break;
-	case GLFW::Key::Backspace:
+	case pragma::platform::Key::Backspace:
 		systemKey = VK_BACK;
 		break;
-	case GLFW::Key::Insert:
+	case pragma::platform::Key::Insert:
 		systemKey = VK_INSERT;
 		break;
-	case GLFW::Key::Delete:
+	case pragma::platform::Key::Delete:
 		systemKey = VK_DELETE;
 		break;
-	case GLFW::Key::Right:
+	case pragma::platform::Key::Right:
 		systemKey = VK_RIGHT;
 		break;
-	case GLFW::Key::Left:
+	case pragma::platform::Key::Left:
 		systemKey = VK_LEFT;
 		break;
-	case GLFW::Key::Down:
+	case pragma::platform::Key::Down:
 		systemKey = VK_DOWN;
 		break;
-	case GLFW::Key::Up:
+	case pragma::platform::Key::Up:
 		systemKey = VK_UP;
 		break;
-	case GLFW::Key::PageUp:
+	case pragma::platform::Key::PageUp:
 		systemKey = VK_PRIOR;
 		break;
-	case GLFW::Key::PageDown:
+	case pragma::platform::Key::PageDown:
 		systemKey = VK_NEXT;
 		break;
-	case GLFW::Key::Home:
+	case pragma::platform::Key::Home:
 		systemKey = VK_HOME;
 		break;
-	case GLFW::Key::End:
+	case pragma::platform::Key::End:
 		systemKey = VK_END;
 		break;
-	case GLFW::Key::CapsLock:
+	case pragma::platform::Key::CapsLock:
 		systemKey = VK_CAPITAL;
 		break;
-	case GLFW::Key::ScrollLock:
+	case pragma::platform::Key::ScrollLock:
 		systemKey = VK_SCROLL;
 		break;
-	case GLFW::Key::NumLock:
+	case pragma::platform::Key::NumLock:
 		systemKey = VK_NUMLOCK;
 		break;
-	case GLFW::Key::PrintScreen:
+	case pragma::platform::Key::PrintScreen:
 		systemKey = VK_PRINT;
 		break;
-	case GLFW::Key::Pause:
+	case pragma::platform::Key::Pause:
 		systemKey = VK_PAUSE;
 		break;
-	case GLFW::Key::F1:
+	case pragma::platform::Key::F1:
 		systemKey = VK_F1;
 		break;
-	case GLFW::Key::F2:
+	case pragma::platform::Key::F2:
 		systemKey = VK_F2;
 		break;
-	case GLFW::Key::F3:
+	case pragma::platform::Key::F3:
 		systemKey = VK_F3;
 		break;
-	case GLFW::Key::F4:
+	case pragma::platform::Key::F4:
 		systemKey = VK_F4;
 		break;
-	case GLFW::Key::F5:
+	case pragma::platform::Key::F5:
 		systemKey = VK_F5;
 		break;
-	case GLFW::Key::F6:
+	case pragma::platform::Key::F6:
 		systemKey = VK_F6;
 		break;
-	case GLFW::Key::F7:
+	case pragma::platform::Key::F7:
 		systemKey = VK_F7;
 		break;
-	case GLFW::Key::F8:
+	case pragma::platform::Key::F8:
 		systemKey = VK_F8;
 		break;
-	case GLFW::Key::F9:
+	case pragma::platform::Key::F9:
 		systemKey = VK_F9;
 		break;
-	case GLFW::Key::F10:
+	case pragma::platform::Key::F10:
 		systemKey = VK_F10;
 		break;
-	case GLFW::Key::F11:
+	case pragma::platform::Key::F11:
 		systemKey = VK_F11;
 		break;
-	case GLFW::Key::F12:
+	case pragma::platform::Key::F12:
 		systemKey = VK_F12;
 		break;
-	case GLFW::Key::F13:
+	case pragma::platform::Key::F13:
 		systemKey = VK_F13;
 		break;
-	case GLFW::Key::F14:
+	case pragma::platform::Key::F14:
 		systemKey = VK_F14;
 		break;
-	case GLFW::Key::F15:
+	case pragma::platform::Key::F15:
 		systemKey = VK_F15;
 		break;
-	case GLFW::Key::F16:
+	case pragma::platform::Key::F16:
 		systemKey = VK_F16;
 		break;
-	case GLFW::Key::F17:
+	case pragma::platform::Key::F17:
 		systemKey = VK_F17;
 		break;
-	case GLFW::Key::F18:
+	case pragma::platform::Key::F18:
 		systemKey = VK_F18;
 		break;
-	case GLFW::Key::F19:
+	case pragma::platform::Key::F19:
 		systemKey = VK_F19;
 		break;
-	case GLFW::Key::F20:
+	case pragma::platform::Key::F20:
 		systemKey = VK_F20;
 		break;
-	case GLFW::Key::F21:
+	case pragma::platform::Key::F21:
 		systemKey = VK_F21;
 		break;
-	case GLFW::Key::F22:
+	case pragma::platform::Key::F22:
 		systemKey = VK_F22;
 		break;
-	case GLFW::Key::F23:
+	case pragma::platform::Key::F23:
 		systemKey = VK_F23;
 		break;
-	case GLFW::Key::F24:
+	case pragma::platform::Key::F24:
 		systemKey = VK_F24;
 		break;
-	//case GLFW::Key::F25:
+	//case pragma::platform::Key::F25:
 	//	systemKey = VK_F25;
 	//	break;
-	case GLFW::Key::Kp0:
+	case pragma::platform::Key::Kp0:
 		systemKey = VK_NUMPAD0;
 		break;
-	case GLFW::Key::Kp1:
+	case pragma::platform::Key::Kp1:
 		systemKey = VK_NUMPAD1;
 		break;
-	case GLFW::Key::Kp2:
+	case pragma::platform::Key::Kp2:
 		systemKey = VK_NUMPAD2;
 		break;
-	case GLFW::Key::Kp3:
+	case pragma::platform::Key::Kp3:
 		systemKey = VK_NUMPAD3;
 		break;
-	case GLFW::Key::Kp4:
+	case pragma::platform::Key::Kp4:
 		systemKey = VK_NUMPAD4;
 		break;
-	case GLFW::Key::Kp5:
+	case pragma::platform::Key::Kp5:
 		systemKey = VK_NUMPAD5;
 		break;
-	case GLFW::Key::Kp6:
+	case pragma::platform::Key::Kp6:
 		systemKey = VK_NUMPAD6;
 		break;
-	case GLFW::Key::Kp7:
+	case pragma::platform::Key::Kp7:
 		systemKey = VK_NUMPAD7;
 		break;
-	case GLFW::Key::Kp8:
+	case pragma::platform::Key::Kp8:
 		systemKey = VK_NUMPAD8;
 		break;
-	case GLFW::Key::Kp9:
+	case pragma::platform::Key::Kp9:
 		systemKey = VK_NUMPAD9;
 		break;
-	case GLFW::Key::KpDecimal:
+	case pragma::platform::Key::KpDecimal:
 		systemKey = VK_DECIMAL;
 		break;
-	case GLFW::Key::KpDivide:
+	case pragma::platform::Key::KpDivide:
 		systemKey = VK_DIVIDE;
 		break;
-	case GLFW::Key::KpMultiply:
+	case pragma::platform::Key::KpMultiply:
 		systemKey = VK_MULTIPLY;
 		break;
-	case GLFW::Key::KpSubtract:
+	case pragma::platform::Key::KpSubtract:
 		systemKey = VK_SUBTRACT;
 		break;
-	case GLFW::Key::KpAdd:
+	case pragma::platform::Key::KpAdd:
 		systemKey = VK_ADD;
 		break;
-	case GLFW::Key::KpEnter:
+	case pragma::platform::Key::KpEnter:
 		systemKey = VK_RETURN;
 		break;
-	//case GLFW::Key::KpEqual:
+	//case pragma::platform::Key::KpEqual:
 	//	systemKey = VK_KP_EQUAL;
 	//	break;
-	case GLFW::Key::LeftShift:
+	case pragma::platform::Key::LeftShift:
 		systemKey = VK_LSHIFT;
 		break;
-	case GLFW::Key::LeftControl:
+	case pragma::platform::Key::LeftControl:
 		systemKey = VK_LCONTROL;
 		break;
-	case GLFW::Key::LeftAlt:
+	case pragma::platform::Key::LeftAlt:
 		systemKey = VK_MENU;
 		break;
-	case GLFW::Key::LeftSuper:
+	case pragma::platform::Key::LeftSuper:
 		systemKey = VK_LWIN;
 		break;
-	case GLFW::Key::RightShift:
+	case pragma::platform::Key::RightShift:
 		systemKey = VK_LSHIFT;
 		break;
-	case GLFW::Key::RightControl:
+	case pragma::platform::Key::RightControl:
 		systemKey = VK_LCONTROL;
 		break;
-	case GLFW::Key::RightAlt:
+	case pragma::platform::Key::RightAlt:
 		systemKey = VK_MENU;
 		break;
-	case GLFW::Key::RightSuper:
+	case pragma::platform::Key::RightSuper:
 		systemKey = VK_RWIN;
 		break;
-	case GLFW::Key::Menu:
+	case pragma::platform::Key::Menu:
 		systemKey = VK_MENU;
 		break;
 #else
 	// Linux Equivalent
-	case GLFW::Key::Escape:
+	case pragma::platform::Key::Escape:
 		systemKey = KEY_ESC;
 		break;
-	case GLFW::Key::Enter:
+	case pragma::platform::Key::Enter:
 		systemKey = KEY_ENTER;
 		break;
-	case GLFW::Key::Tab:
+	case pragma::platform::Key::Tab:
 		systemKey = KEY_TAB;
 		break;
-	case GLFW::Key::Backspace:
+	case pragma::platform::Key::Backspace:
 		systemKey = KEY_BACKSPACE;
 		break;
-	case GLFW::Key::Insert:
+	case pragma::platform::Key::Insert:
 		systemKey = KEY_INSERT;
 		break;
-	case GLFW::Key::Delete:
+	case pragma::platform::Key::Delete:
 		systemKey = KEY_DELETE;
 		break;
-	case GLFW::Key::Right:
+	case pragma::platform::Key::Right:
 		systemKey = KEY_RIGHT;
 		break;
-	case GLFW::Key::Left:
+	case pragma::platform::Key::Left:
 		systemKey = KEY_LEFT;
 		break;
-	case GLFW::Key::Down:
+	case pragma::platform::Key::Down:
 		systemKey = KEY_DOWN;
 		break;
-	case GLFW::Key::Up:
+	case pragma::platform::Key::Up:
 		systemKey = KEY_UP;
 		break;
-	case GLFW::Key::PageUp:
+	case pragma::platform::Key::PageUp:
 		systemKey = KEY_PAGEUP;
 		break;
-	case GLFW::Key::PageDown:
+	case pragma::platform::Key::PageDown:
 		systemKey = KEY_PAGEDOWN;
 		break;
-	case GLFW::Key::Home:
+	case pragma::platform::Key::Home:
 		systemKey = KEY_HOME;
 		break;
-	case GLFW::Key::End:
+	case pragma::platform::Key::End:
 		systemKey = KEY_END;
 		break;
-	case GLFW::Key::CapsLock:
+	case pragma::platform::Key::CapsLock:
 		systemKey = KEY_CAPSLOCK;
 		break;
-	case GLFW::Key::ScrollLock:
+	case pragma::platform::Key::ScrollLock:
 		systemKey = KEY_SCROLLLOCK;
 		break;
-	case GLFW::Key::NumLock:
+	case pragma::platform::Key::NumLock:
 		systemKey = KEY_NUMLOCK;
 		break;
-	case GLFW::Key::PrintScreen:
+	case pragma::platform::Key::PrintScreen:
 		systemKey = KEY_PRINT;
 		break;
-	case GLFW::Key::Pause:
+	case pragma::platform::Key::Pause:
 		systemKey = KEY_PAUSE;
 		break;
-	case GLFW::Key::F1:
+	case pragma::platform::Key::F1:
 		systemKey = KEY_F1;
 		break;
-	case GLFW::Key::F2:
+	case pragma::platform::Key::F2:
 		systemKey = KEY_F2;
 		break;
-	case GLFW::Key::F3:
+	case pragma::platform::Key::F3:
 		systemKey = KEY_F3;
 		break;
-	case GLFW::Key::F4:
+	case pragma::platform::Key::F4:
 		systemKey = KEY_F4;
 		break;
-	case GLFW::Key::F5:
+	case pragma::platform::Key::F5:
 		systemKey = KEY_F5;
 		break;
-	case GLFW::Key::F6:
+	case pragma::platform::Key::F6:
 		systemKey = KEY_F6;
 		break;
-	case GLFW::Key::F7:
+	case pragma::platform::Key::F7:
 		systemKey = KEY_F7;
 		break;
-	case GLFW::Key::F8:
+	case pragma::platform::Key::F8:
 		systemKey = KEY_F8;
 		break;
-	case GLFW::Key::F9:
+	case pragma::platform::Key::F9:
 		systemKey = KEY_F9;
 		break;
-	case GLFW::Key::F10:
+	case pragma::platform::Key::F10:
 		systemKey = KEY_F10;
 		break;
-	case GLFW::Key::F11:
+	case pragma::platform::Key::F11:
 		systemKey = KEY_F11;
 		break;
-	case GLFW::Key::F12:
+	case pragma::platform::Key::F12:
 		systemKey = KEY_F12;
 		break;
-	case GLFW::Key::F13:
+	case pragma::platform::Key::F13:
 		systemKey = KEY_F13;
 		break;
-	case GLFW::Key::F14:
+	case pragma::platform::Key::F14:
 		systemKey = KEY_F14;
 		break;
-	case GLFW::Key::F15:
+	case pragma::platform::Key::F15:
 		systemKey = KEY_F15;
 		break;
-	case GLFW::Key::F16:
+	case pragma::platform::Key::F16:
 		systemKey = KEY_F16;
 		break;
-	case GLFW::Key::F17:
+	case pragma::platform::Key::F17:
 		systemKey = KEY_F17;
 		break;
-	case GLFW::Key::F18:
+	case pragma::platform::Key::F18:
 		systemKey = KEY_F18;
 		break;
-	case GLFW::Key::F19:
+	case pragma::platform::Key::F19:
 		systemKey = KEY_F19;
 		break;
-	case GLFW::Key::F20:
+	case pragma::platform::Key::F20:
 		systemKey = KEY_F20;
 		break;
-	case GLFW::Key::F21:
+	case pragma::platform::Key::F21:
 		systemKey = KEY_F21;
 		break;
-	case GLFW::Key::F22:
+	case pragma::platform::Key::F22:
 		systemKey = KEY_F22;
 		break;
-	case GLFW::Key::F23:
+	case pragma::platform::Key::F23:
 		systemKey = KEY_F23;
 		break;
-	case GLFW::Key::F24:
+	case pragma::platform::Key::F24:
 		systemKey = KEY_F24;
 		break;
-	//case GLFW::Key::F25:
+	//case pragma::platform::Key::F25:
 	//	systemKey = VK_F25;
 	//	break;
-	case GLFW::Key::Kp0:
+	case pragma::platform::Key::Kp0:
 		systemKey = KEY_KP0;
 		break;
-	case GLFW::Key::Kp1:
+	case pragma::platform::Key::Kp1:
 		systemKey = KEY_KP1;
 		break;
-	case GLFW::Key::Kp2:
+	case pragma::platform::Key::Kp2:
 		systemKey = KEY_KP2;
 		break;
-	case GLFW::Key::Kp3:
+	case pragma::platform::Key::Kp3:
 		systemKey = KEY_KP3;
 		break;
-	case GLFW::Key::Kp4:
+	case pragma::platform::Key::Kp4:
 		systemKey = KEY_KP4;
 		break;
-	case GLFW::Key::Kp5:
+	case pragma::platform::Key::Kp5:
 		systemKey = KEY_KP5;
 		break;
-	case GLFW::Key::Kp6:
+	case pragma::platform::Key::Kp6:
 		systemKey = KEY_KP6;
 		break;
-	case GLFW::Key::Kp7:
+	case pragma::platform::Key::Kp7:
 		systemKey = KEY_KP7;
 		break;
-	case GLFW::Key::Kp8:
+	case pragma::platform::Key::Kp8:
 		systemKey = KEY_KP8;
 		break;
-	case GLFW::Key::Kp9:
+	case pragma::platform::Key::Kp9:
 		systemKey = KEY_KP9;
 		break;
-	case GLFW::Key::KpDecimal:
+	case pragma::platform::Key::KpDecimal:
 		systemKey = KEY_KPDOT;
 		break;
-	case GLFW::Key::KpDivide:
+	case pragma::platform::Key::KpDivide:
 		systemKey = KEY_KPSLASH;
 		break;
-	case GLFW::Key::KpMultiply:
+	case pragma::platform::Key::KpMultiply:
 		systemKey = KEY_KPASTERISK;
 		break;
-	case GLFW::Key::KpSubtract:
+	case pragma::platform::Key::KpSubtract:
 		systemKey = KEY_KPMINUS;
 		break;
-	case GLFW::Key::KpAdd:
+	case pragma::platform::Key::KpAdd:
 		systemKey = KEY_KPPLUS;
 		break;
-	case GLFW::Key::KpEnter:
+	case pragma::platform::Key::KpEnter:
 		systemKey = KEY_KPENTER;
 		break;
-	//case GLFW::Key::KpEqual:
+	//case pragma::platform::Key::KpEqual:
 	//	systemKey = VK_KP_EQUAL;
 	//	break;
-	case GLFW::Key::LeftShift:
+	case pragma::platform::Key::LeftShift:
 		systemKey = KEY_LEFTSHIFT;
 		break;
-	case GLFW::Key::LeftControl:
+	case pragma::platform::Key::LeftControl:
 		systemKey = KEY_LEFTCTRL;
 		break;
-	case GLFW::Key::LeftAlt:
+	case pragma::platform::Key::LeftAlt:
 		systemKey = KEY_LEFTALT;
 		break;
-	case GLFW::Key::LeftSuper:
+	case pragma::platform::Key::LeftSuper:
 		systemKey = KEY_LEFTMETA;
 		break;
-	case GLFW::Key::RightShift:
+	case pragma::platform::Key::RightShift:
 		systemKey = KEY_RIGHTSHIFT;
 		break;
-	case GLFW::Key::RightControl:
+	case pragma::platform::Key::RightControl:
 		systemKey = KEY_LEFTCTRL; //separate key here?
 		break;
-	case GLFW::Key::RightAlt:
+	case pragma::platform::Key::RightAlt:
 		systemKey = KEY_RIGHTALT;
 		break;
-	case GLFW::Key::RightSuper:
+	case pragma::platform::Key::RightSuper:
 		systemKey = KEY_RIGHTMETA;
 		break;
-	case GLFW::Key::Menu:
+	case pragma::platform::Key::Menu:
 		systemKey = KEY_MENU;
 		break;
 #endif
 	default:
 		{
 			if(systemKey == -1) {
-				if((mods & (GLFW::Modifier::Alt | GLFW::Modifier::Control | GLFW::Modifier::Super)) == GLFW::Modifier::None) {
+				if((mods & (pragma::platform::Modifier::Alt | pragma::platform::Modifier::Control | pragma::platform::Modifier::Super)) == pragma::platform::Modifier::None) {
 					// Already handled by CharCallback
 					return util::EventReply::Handled;
 				}
@@ -1082,14 +1082,14 @@ util::EventReply WIWeb::KeyboardCallback(GLFW::Key key, int scanCode, GLFW::KeyS
 				return util::EventReply::Unhandled;
 		}
 	}
-	auto press = (state == GLFW::KeyState::Press || state == GLFW::KeyState::Repeat);
+	auto press = (state == pragma::platform::KeyState::Press || state == pragma::platform::KeyState::Repeat);
 	auto cefMods = get_cef_modifiers(mods) | m_buttonMods;
-	if(state == GLFW::KeyState::Repeat)
+	if(state == pragma::platform::KeyState::Repeat)
 		cefMods |= cef::Modifier::IsRepeat;
 	cef::get_wrapper().browser_send_event_key(browser, c.has_value() ? *c : systemKey, systemKey, scanCode, press, cefMods);
 	return util::EventReply::Handled;
 }
-util::EventReply WIWeb::CharCallback(unsigned int c, GLFW::Modifier mods)
+util::EventReply WIWeb::CharCallback(unsigned int c, pragma::platform::Modifier mods)
 {
 	WIBase::CharCallback(c, mods);
 	auto *browser = GetBrowser();

@@ -23,10 +23,10 @@ class DLLEXPORT WIWeb : public WITexturedRect {
 	virtual void OnCursorEntered() override;
 	virtual void OnCursorExited() override;
 	virtual void OnCursorMoved(int x, int y) override;
-	virtual util::EventReply MouseCallback(GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods) override;
+	virtual util::EventReply MouseCallback(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods) override;
 	virtual util::EventReply OnDoubleClick() override;
-	virtual util::EventReply KeyboardCallback(GLFW::Key key, int scanCode, GLFW::KeyState state, GLFW::Modifier mods) override;
-	virtual util::EventReply CharCallback(unsigned int c, GLFW::Modifier mods = GLFW::Modifier::None) override;
+	virtual util::EventReply KeyboardCallback(pragma::platform::Key key, int scanCode, pragma::platform::KeyState state, pragma::platform::Modifier mods) override;
+	virtual util::EventReply CharCallback(unsigned int c, pragma::platform::Modifier mods = pragma::platform::Modifier::None) override;
 	virtual util::EventReply ScrollCallback(Vector2 offset, bool offsetAsPixels = false) override;
 	virtual void OnFocusGained() override;
 	virtual void OnFocusKilled() override;
