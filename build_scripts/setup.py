@@ -14,7 +14,7 @@ if platform == "linux":
 else:
 	suffix = "windows64"
 
-cefVer = "cef_binary_120.2.3+g7d89c0c+chromium-120.0.6099.199"
+cefVer = "cef_binary_133.4.5+gdb28106+chromium-133.0.6943.142"
 cefRoot = deps_dir +"/"+cefVer+"_" +suffix
 if not Path(cefRoot).is_dir():
 	print_msg("CEF not found. Downloading...")
