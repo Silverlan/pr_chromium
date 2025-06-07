@@ -55,13 +55,21 @@ static bool initialize_chromium(std::string &outErr)
 		return false;
 	}
 #if _WIN32
-	auto pathToSubProcess = util::Path::CreatePath(util::get_program_path()) + util::Path::CreateFile("modules/chromium/pr_chromium_subprocess.exe");
+	auto pathToSubProcess = util::FilePath("modules/chromium/pr_chromium_subprocess.exe");
 #elif __linux__
-	auto pathToSubProcess = util::Path::CreatePath(util::get_program_path()) + util::Path::CreateFile("modules/chromium/pr_chromium_subprocess");
+	auto pathToSubProcess = util::FilePath("modules/chromium/pr_chromium_subprocess");
 #endif
+
+	std::string absPathToSubProcess;
+	if(!filemanager::find_absolute_path(pathToSubProcess.GetString(), absPathToSubProcess)) {
+		outErr = "Unable to locale path to pr_chromium_subprocess executable ('" +pathToSubProcess.GetString() +"')";
+		return false;
+	}
+	pathToSubProcess = util::FilePath(absPathToSubProcess);
+
 	auto localPathToCache = util::Path::CreatePath("cache/chromium");
 	filemanager::create_path(localPathToCache.GetString());
-	auto pathToCache = util::Path::CreatePath(util::get_program_path()) + localPathToCache;
+	auto pathToCache = util::Path::CreatePath(filemanager::get_program_write_path()) + localPathToCache;
 	if(!g_chromiumWrapper->initialize(pathToSubProcess.GetString().c_str(), pathToCache.GetString().c_str())) {
 		g_chromiumWrapper = nullptr;
 		outErr = "Unable to initialize chromium wrapper: Failed to initialize chromium!";
