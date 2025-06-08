@@ -334,9 +334,9 @@ bool WIWeb::InitializeChromiumBrowser()
 
 	m_browser = std::shared_ptr<cef::CWebBrowser> {cef::get_wrapper().browser_create(m_browserClient.get(), m_initialUrl.c_str()), [](cef::CWebBrowser *browserClient) { cef::get_wrapper().browser_release(browserClient); }};
 
-	auto dlPath = util::Path::CreatePath(filemanager::get_program_write_path());
-	dlPath += "cache/chromium/downloads/";
-	filemanager::create_path(dlPath.GetString());
+	auto relPath = util::DirPath("cache/chromium/downloads/");
+	filemanager::create_path(relPath.GetString());
+	auto dlPath = util::DirPath(filemanager::get_program_write_path(), relPath);
 	cef::get_wrapper().browser_client_set_download_location(m_browserClient.get(), dlPath.GetString().c_str());
 	cef::get_wrapper().browser_client_set_download_start_callback(m_browserClient.get(), [](cef::CWebBrowserClient *browserClient, uint32_t id, const char *fileName) {
 		auto relPath = util::Path::CreateFile(fileName);
