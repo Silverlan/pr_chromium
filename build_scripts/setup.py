@@ -39,17 +39,7 @@ mkdir("build",cd=True)
 cmake_configure("..",generator,["-DCMAKE_BUILD_TYPE=Release"])
 cmake_build("Release",["libcef_dll_wrapper"])
 
-# Note: DEPENDENCY_CHROMIUM_INCLUDE is intentionally not pointing to the "include" directory, because CEF
-# treats the parent directory as include directory instead.
-cmake_args.append("-DDEPENDENCY_CHROMIUM_INCLUDE=" +cefRoot +"")
-cmake_args.append("-DDEPENDENCY_CEF_LOCATION=" +cefRoot +"")
-
-if platform == "linux":
-	cmake_args.append("-DDEPENDENCY_CHROMIUM_LIBRARY=" +cefRoot +"/Release/libcef.so")
-	if(generator=="Ninja Multi-Config"):
-		cmake_args.append("-DDEPENDENCY_LIBCEF_DLL_WRAPPER_LIBRARY=" +cefRoot +"/build/libcef_dll_wrapper/Release/libcef_dll_wrapper.a")
-	else:
-		cmake_args.append("-DDEPENDENCY_LIBCEF_DLL_WRAPPER_LIBRARY=" +cefRoot +"/build/libcef_dll_wrapper/libcef_dll_wrapper.a")
-else:
-	cmake_args.append("-DDEPENDENCY_CHROMIUM_LIBRARY=" +cefRoot +"/Release/libcef.lib")
-	cmake_args.append("-DDEPENDENCY_LIBCEF_DLL_WRAPPER_LIBRARY=" +cefRoot +"/build/libcef_dll_wrapper/Release/libcef_dll_wrapper.lib")
+copy_prebuilt_binaries(cefRoot +"/Release", "cef")
+copy_prebuilt_binaries(cefRoot +"/build/libcef_dll_wrapper/Release", "cef")
+copy_prebuilt_directory(cefRoot +"/include", dest_dir=get_library_root_dir("cef") +"/include/include/")
+copy_prebuilt_directory(cefRoot +"/Resources/", dest_dir=get_library_root_dir("cef") +"/Resources/")
