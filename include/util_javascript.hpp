@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: (c) 2021 Silverlan <opensource@pragma-engine.com>
+// SPDX-License-Identifier: MIT
+
 #ifndef __UTIL_JAVASCRIPT_HPP__
 #define __UTIL_JAVASCRIPT_HPP__
 

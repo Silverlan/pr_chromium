@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: (c) 2021 Silverlan <opensource@pragma-engine.com>
+// SPDX-License-Identifier: MIT
+
 #ifndef __WIWEB_HPP__
 #define __WIWEB_HPP__
 
