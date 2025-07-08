@@ -44,4 +44,5 @@ if build_all:
 	copy_prebuilt_binaries(cefRoot +"/Release", "cef")
 	copy_prebuilt_binaries(cefRoot +"/build/libcef_dll_wrapper/Release", "cef")
 	copy_prebuilt_directory(cefRoot +"/include", dest_dir=get_library_root_dir("cef") +"/include/include/")
+	copy_prebuilt_directory(cefRoot +"/Release/", dest_dir=get_library_root_dir("cef") +"/Resources/")
 	copy_prebuilt_directory(cefRoot +"/Resources/", dest_dir=get_library_root_dir("cef") +"/Resources/")
