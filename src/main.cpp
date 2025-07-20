@@ -21,13 +21,13 @@ cef::IChromiumWrapper::IChromiumWrapper(util::Library &lib)
 	  && PR_CHROMIUM_FIND_SYMBOL(lib, browser_client_set_download_start_callback) && PR_CHROMIUM_FIND_SYMBOL(lib, browser_client_set_download_update_callback) && PR_CHROMIUM_FIND_SYMBOL(lib, browser_client_set_download_location)
 	  && PR_CHROMIUM_FIND_SYMBOL(lib, browser_client_set_on_address_change_callback) && PR_CHROMIUM_FIND_SYMBOL(lib, browser_client_set_on_loading_state_change) && PR_CHROMIUM_FIND_SYMBOL(lib, browser_client_set_on_load_start) && PR_CHROMIUM_FIND_SYMBOL(lib, browser_client_set_on_load_end)
 	  && PR_CHROMIUM_FIND_SYMBOL(lib, browser_client_set_on_load_error) && PR_CHROMIUM_FIND_SYMBOL(lib, browser_create) && PR_CHROMIUM_FIND_SYMBOL(lib, browser_release) && PR_CHROMIUM_FIND_SYMBOL(lib, browser_close) && PR_CHROMIUM_FIND_SYMBOL(lib, browser_try_close)
-	  && PR_CHROMIUM_FIND_SYMBOL(lib, browser_get_user_data) && PR_CHROMIUM_FIND_SYMBOL(lib, browser_was_resized) && PR_CHROMIUM_FIND_SYMBOL(lib, render_handler_set_image_data) && PR_CHROMIUM_FIND_SYMBOL(lib, render_handler_clear_dirty_rects)
+	  && PR_CHROMIUM_FIND_SYMBOL(lib, browser_get_user_data) && PR_CHROMIUM_FIND_SYMBOL(lib, browser_was_resized) && PR_CHROMIUM_FIND_SYMBOL(lib, browser_invalidate) && PR_CHROMIUM_FIND_SYMBOL(lib, render_handler_set_image_data) && PR_CHROMIUM_FIND_SYMBOL(lib, render_handler_clear_dirty_rects)
 	  && PR_CHROMIUM_FIND_SYMBOL(lib, render_handler_get_dirty_rects) && PR_CHROMIUM_FIND_SYMBOL(lib, browser_load_url) && PR_CHROMIUM_FIND_SYMBOL(lib, browser_can_go_back) && PR_CHROMIUM_FIND_SYMBOL(lib, browser_can_go_forward) && PR_CHROMIUM_FIND_SYMBOL(lib, browser_go_back)
 	  && PR_CHROMIUM_FIND_SYMBOL(lib, browser_go_forward) && PR_CHROMIUM_FIND_SYMBOL(lib, browser_has_document) && PR_CHROMIUM_FIND_SYMBOL(lib, browser_is_loading) && PR_CHROMIUM_FIND_SYMBOL(lib, browser_reload) && PR_CHROMIUM_FIND_SYMBOL(lib, browser_reload_ignore_cache)
 	  && PR_CHROMIUM_FIND_SYMBOL(lib, browser_stop_load) && PR_CHROMIUM_FIND_SYMBOL(lib, browser_copy) && PR_CHROMIUM_FIND_SYMBOL(lib, browser_cut) && PR_CHROMIUM_FIND_SYMBOL(lib, browser_delete) && PR_CHROMIUM_FIND_SYMBOL(lib, browser_paste) && PR_CHROMIUM_FIND_SYMBOL(lib, browser_redo)
 	  && PR_CHROMIUM_FIND_SYMBOL(lib, browser_select_all) && PR_CHROMIUM_FIND_SYMBOL(lib, browser_undo) && PR_CHROMIUM_FIND_SYMBOL(lib, browser_set_zoom_level) && PR_CHROMIUM_FIND_SYMBOL(lib, browser_get_zoom_level) && PR_CHROMIUM_FIND_SYMBOL(lib, browser_send_event_mouse_move)
 	  && PR_CHROMIUM_FIND_SYMBOL(lib, browser_send_event_mouse_click) && PR_CHROMIUM_FIND_SYMBOL(lib, browser_send_event_key) && PR_CHROMIUM_FIND_SYMBOL(lib, browser_send_event_char) && PR_CHROMIUM_FIND_SYMBOL(lib, browser_send_event_mouse_wheel)
-	  && PR_CHROMIUM_FIND_SYMBOL(lib, browser_set_focus) && PR_CHROMIUM_FIND_SYMBOL(lib, browser_execute_java_script);
+	  && PR_CHROMIUM_FIND_SYMBOL(lib, browser_set_focus) && PR_CHROMIUM_FIND_SYMBOL(lib, browser_execute_java_script) && PR_CHROMIUM_FIND_SYMBOL(lib, render_handler_is_renderer_size_mismatched);
 }
 
 static std::optional<bool> initResult = {};

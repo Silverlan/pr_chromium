@@ -22,7 +22,7 @@
 extern DLLCLIENT CEngine *c_engine;
 
 LINK_WGUI_TO_CLASS(WIWeb, WIWeb);
-#pragma optimize("", off)
+
 void WIWeb::register_callbacks()
 {
 	Lua::gui::register_lua_callback("wiweb", "OnDownloadStarted", [](WIBase &el, lua_State *l, const std::function<void(const std::function<void()> &)> &callLuaFunc) -> CallbackHandle {
@@ -142,6 +142,35 @@ void WIWeb::Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd
 	WIBase::Think(drawCmd);
 	if(m_browserClient == nullptr)
 		return;
+
+	if (!m_wasReloaded) {
+		// Somtimes when loading a page in the chromium browser for the first time,
+		// the "network system" crashes for an unknown reason, causing the page to fail to load.
+		// As a workaround, we just reload the page after a short period of time (the crash
+		// only ever happens if the page is loaded immediately after initialization).
+		if (!m_initialReloadTimePoint)
+			m_initialReloadTimePoint = std::chrono::steady_clock::now();
+		auto t = std::chrono::steady_clock::now();
+		auto dt = t -*m_initialReloadTimePoint;
+		if (std::chrono::duration_cast<std::chrono::milliseconds>(dt).count() > 500) {
+			m_wasReloaded = true;
+			cef::get_wrapper().browser_reload(GetBrowser());
+		}
+	}
+
+	if (m_webRenderer && m_browser && cef::get_wrapper().render_handler_is_renderer_size_mismatched(m_webRenderer.get())) {
+		if (!m_scheduledRendererReload)
+			m_scheduledRendererReload = std::chrono::steady_clock::now() +std::chrono::milliseconds(200);
+		if (m_scheduledRendererReload) {
+			if (std::chrono::steady_clock::now() >= *m_scheduledRendererReload) {
+				cef::get_wrapper().browser_was_resized(m_browser.get());
+				m_scheduledRendererReload = {};
+			}
+		}
+	}
+	else if (m_scheduledRendererReload)
+		m_scheduledRendererReload = {};
+
 	if(m_webRenderer)
 		cef::get_wrapper().render_handler_clear_dirty_rects(m_webRenderer.get());
 	cef::get_wrapper().do_message_loop_work();
@@ -209,7 +238,7 @@ bool WIWeb::Resize()
 	prosper::util::BufferCreateInfo bufCreateInfo {};
 	bufCreateInfo.size = imgCreateInfo.width * imgCreateInfo.height * prosper::util::get_pixel_size(imgCreateInfo.format);
 	bufCreateInfo.flags |= prosper::util::BufferCreateInfo::Flags::Persistent;
-	bufCreateInfo.memoryFeatures = prosper::MemoryFeatureFlags::CPUToGPU;
+	bufCreateInfo.memoryFeatures = prosper::MemoryFeatureFlags::CPUToGPU | prosper::MemoryFeatureFlags::HostCoherent;
 
 	// Clear to white color
 	std::vector<std::array<uint8_t, 4>> clearColData;
@@ -285,8 +314,8 @@ bool WIWeb::InitializeChromiumBrowser()
 	  },
 	  [](cef::CWebRenderHandler *renderHandler, int &x, int &y, int &w, int &h) {
 		  auto *el = static_cast<WIWeb *>(cef::get_wrapper().render_handler_get_user_data(renderHandler));
-		  w = el->GetWidth();
-		  h = el->GetHeight();
+		  w = el->m_browserViewSize.x;//el->GetWidth();
+		  h = el->m_browserViewSize.y;//el->GetHeight();
 		  w = umath::max(w, 1);
 		  h = umath::max(h, 1);
 
@@ -411,6 +440,8 @@ void WIWeb::SetBrowserViewSize(Vector2i size)
 	size.x = umath::max(size.x, 1);
 	size.y = umath::max(size.y, 1);
 	m_browserViewSize = size;
+	if (GetBrowser())
+		cef::get_wrapper().browser_was_resized(GetBrowser());
 }
 const Vector2i &WIWeb::GetBrowserViewSize() const { return m_browserViewSize; }
 

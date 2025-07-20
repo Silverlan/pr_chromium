@@ -84,6 +84,11 @@ class DLLEXPORT WIWeb : public WITexturedRect {
 	bool m_browserInitialized = false;
 	Vector2i m_browserViewSize = {};
 	Vector2i m_mousePos = {};
+
+	std::optional<std::chrono::steady_clock::time_point> m_initialReloadTimePoint {};
+	bool m_wasReloaded = false;
+
+	std::optional<std::chrono::steady_clock::time_point> m_scheduledRendererReload {};
 	Vector2i GetBrowserMousePos() const;
 
 	cef::Modifier m_buttonMods = cef::Modifier::None;
