@@ -11,6 +11,9 @@
 #include <iostream>
 #include <pragma/pragma_module.hpp>
 #include <pragma/util/util_module.hpp>
+#include <sharedutils/scope_guard.h>
+
+import pragma.debug.crashdump;
 
 #define PR_CHROMIUM_FIND_SYMBOL(lib, sym) (sym = lib.FindSymbolAddress<decltype(sym)>("pr_chromium_" #sym)) != nullptr
 cef::IChromiumWrapper::IChromiumWrapper(util::Library &lib)
@@ -73,6 +76,12 @@ static bool initialize_chromium(std::string &outErr)
 	auto localPathToCache = util::Path::CreatePath("cache/chromium");
 	filemanager::create_path(localPathToCache.GetString());
 	auto pathToCache = util::Path::CreatePath(filemanager::get_program_write_path()) + localPathToCache;
+
+	// CEF overrides our crash handlers. To circumvent that, we re-initialize ours after CEF has been initialized.
+	util::ScopeGuard reinitCrashHandler {[]() {
+		pragma::debug::CrashHandler::Initialize();
+	}};
+
 	if(!g_chromiumWrapper->initialize(pathToSubProcess.GetString().c_str(), pathToCache.GetString().c_str())) {
 		g_chromiumWrapper = nullptr;
 		outErr = "Unable to initialize chromium wrapper: Failed to initialize chromium!";
