@@ -82,9 +82,10 @@ static bool initialize_chromium(std::string &outErr)
 		pragma::debug::CrashHandler::Initialize();
 	}};
 
-	if(!g_chromiumWrapper->initialize(pathToSubProcess.GetString().c_str(), pathToCache.GetString().c_str())) {
+	std::string initErr;
+	if(!g_chromiumWrapper->initialize(pathToSubProcess.GetString().c_str(), pathToCache.GetString().c_str(), initErr)) {
 		g_chromiumWrapper = nullptr;
-		outErr = "Unable to initialize chromium wrapper: Failed to initialize chromium!";
+		outErr = "Unable to initialize chromium wrapper: Failed to initialize chromium: " +initErr;
 		return false;
 	}
 	initResult = true;

@@ -1,7 +1,7 @@
 include(${CMAKE_SOURCE_DIR}/cmake/pr_common.cmake)
 
 set(PROJ_NAME pr_chromium)
-pr_add_library(${PROJ_NAME} SHARED)
+pr_add_module(${PROJ_NAME} SHARED "modules/chromium/")
 
 pr_add_dependency(${PROJ_NAME} iclient TARGET PUBLIC)
 pr_add_dependency(${PROJ_NAME} ishared TARGET PUBLIC)
