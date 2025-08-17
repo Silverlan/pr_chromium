@@ -34,7 +34,7 @@ namespace cef {
 		IChromiumWrapper(util::Library &lib);
 		IChromiumWrapper() = default;
 		void (*register_javascript_function)(const std::string &name, cef::JSValue *(*const fCallback)(cef::JSValue *, uint32_t)) = nullptr;
-		bool (*initialize)(const char *, const char *, std::string&) = nullptr;
+		bool (*initialize)(const char *, const char *, bool, std::string &) = nullptr;
 		void (*close)() = nullptr;
 		void (*do_message_loop_work)() = nullptr;
 		bool (*parse_url)(const char *url, void (*r)(void *, const char *, const char *, const char *, const char *, const char *, const char *, const char *, const char *, const char *, const char *), void *);
