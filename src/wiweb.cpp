@@ -1162,4 +1162,3 @@ void WIWeb::OnFocusKilled()
 		return;
 	cef::get_wrapper().browser_set_focus(browser, false);
 }
-#pragma optimize("", on)
