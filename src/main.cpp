@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: (c) 2021 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
+#include "pragma/pragma_module.hpp"
 #include "wvmodule.hpp"
 #include "lchromium.hpp"
 #include "wiweb.hpp"
@@ -9,12 +10,12 @@
 #include <image/prosper_texture.hpp>
 #include <fsys/filesystem.h>
 #include <iostream>
-#include <pragma/pragma_module.hpp>
 #include <pragma/util/util_module.hpp>
 #include <pragma/c_engine.h>
 #include <sharedutils/scope_guard.h>
 
 import pragma.debug.crashdump;
+import pragma.iclient;
 
 #define PR_CHROMIUM_FIND_SYMBOL(lib, sym) (sym = lib.FindSymbolAddress<decltype(sym)>("pr_chromium_" #sym)) != nullptr
 cef::IChromiumWrapper::IChromiumWrapper(util::Library &lib)

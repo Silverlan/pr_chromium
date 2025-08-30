@@ -5,7 +5,6 @@
 #include <prosper_util.hpp>
 #include <image/prosper_sampler.hpp>
 #include <buffers/prosper_buffer.hpp>
-#include <pragma/lua/libraries/c_gui_callbacks.hpp>
 #include <pragma/c_engine.h>
 // #include <pragma/engine.h>
 #include "wiweb.hpp"
@@ -18,6 +17,8 @@
 #if __linux__
 #include <linux/input-event-codes.h> //for key defines
 #endif
+
+import pragma.client.scripting.lua;
 
 extern DLLCLIENT CEngine *c_engine;
 
