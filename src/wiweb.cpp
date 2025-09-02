@@ -8,10 +8,10 @@
 #include <pragma/c_engine.h>
 // #include <pragma/engine.h>
 #include "wiweb.hpp"
+#include <wgui/types/wiroot.h>
 #include <prosper_window.hpp>
 #include <prosper_command_buffer.hpp>
 #include <fsys/filesystem.h>
-#include <wgui/types/wiroot.h>
 #include <memory>
 
 #if __linux__
@@ -19,6 +19,7 @@
 #endif
 
 import pragma.client.scripting.lua;
+import pragma.gui;
 
 extern DLLCLIENT CEngine *c_engine;
 
