@@ -6,11 +6,10 @@ pr_add_module(${PROJ_NAME} SHARED "modules/chromium/")
 pr_add_dependency(${PROJ_NAME} iclient TARGET PUBLIC)
 pr_add_dependency(${PROJ_NAME} ishared TARGET PUBLIC)
 
-pr_add_headers(${PROJ_NAME} "include/")
-pr_add_sources(${PROJ_NAME} "src/")
+pr_init_module(${PROJ_NAME})
 
 add_subdirectory("external_libs/pr_chromium_wrapper")
-pr_add_dependency(${PROJ_NAME} pr_chromium_wrapper TARGET PUBLIC)
+add_dependencies(${PROJ_NAME} pr_chromium_wrapper)
 add_dependencies(${PROJ_NAME} pr_chromium_subprocess)
 
 set_target_properties(pr_chromium PROPERTIES FOLDER modules/chromium)

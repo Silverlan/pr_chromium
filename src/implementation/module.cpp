@@ -1,20 +1,10 @@
 // SPDX-FileCopyrightText: (c) 2021 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
-#include "wvmodule.hpp"
-#include "lchromium.hpp"
-#include "wiweb.hpp"
-#include "util_javascript.hpp"
-#include "chromium_wrapper.hpp"
-#include <image/prosper_texture.hpp>
-#include <fsys/filesystem.h>
-#include <iostream>
-#include <pragma/pragma_module.hpp>
-#include <pragma/util/util_module.hpp>
-#include <pragma/c_engine.h>
-#include <sharedutils/scope_guard.h>
+module pragma.modules.chromium;
 
-import pragma.debug.crashdump;
+import pragma.client;
+import pragma.iclient;
 
 #define PR_CHROMIUM_FIND_SYMBOL(lib, sym) (sym = lib.FindSymbolAddress<decltype(sym)>("pr_chromium_" #sym)) != nullptr
 cef::IChromiumWrapper::IChromiumWrapper(util::Library &lib)
@@ -44,6 +34,9 @@ static bool initialize_chromium(std::string &outErr)
 	if(initResult.has_value())
 		return *initResult;
 	initResult = false;
+
+	WGUI::GetInstance().RegisterType<WIWeb>("WIWeb");
+
 	std::string err;
 
 #if _WIN32
@@ -102,9 +95,9 @@ static void release_chromium()
 	g_libChromiumWrapper = nullptr;
 }
 extern "C" {
-bool PRAGMA_EXPORT pragma_attach(std::string &outErr) { return initialize_chromium(outErr); }
-void PRAGMA_EXPORT pragma_detach() { release_chromium(); }
-void PRAGMA_EXPORT pragma_initialize_lua(Lua::Interface &l)
+bool PR_EXPORT pragma_attach(std::string &outErr) { return initialize_chromium(outErr); }
+void PR_EXPORT pragma_detach() { release_chromium(); }
+void PR_EXPORT pragma_initialize_lua(Lua::Interface &l)
 {
 	Lua::chromium::register_library(l);
 	WIWeb::register_callbacks();
@@ -117,7 +110,7 @@ void PRAGMA_EXPORT pragma_initialize_lua(Lua::Interface &l)
 
 extern "C" {
 
-PRAGMA_EXPORT void wv_chromium_load_url(WIBase *p, const std::string &url)
+PR_EXPORT void wv_chromium_load_url(WIBase *p, const std::string &url)
 {
 	auto *pWeb = dynamic_cast<WIWeb *>(p);
 	if(pWeb == nullptr)
@@ -125,7 +118,7 @@ PRAGMA_EXPORT void wv_chromium_load_url(WIBase *p, const std::string &url)
 	pWeb->LoadURL(url);
 }
 
-PRAGMA_EXPORT void wv_chromium_set_browser_view_size(WIBase *p, const Vector2i &viewSize)
+PR_EXPORT void wv_chromium_set_browser_view_size(WIBase *p, const Vector2i &viewSize)
 {
 	auto *pWeb = dynamic_cast<WIWeb *>(p);
 	if(pWeb == nullptr)
@@ -133,7 +126,7 @@ PRAGMA_EXPORT void wv_chromium_set_browser_view_size(WIBase *p, const Vector2i &
 	pWeb->SetBrowserViewSize(viewSize);
 }
 
-PRAGMA_EXPORT void wv_chromium_set_transparent_background(WIBase *p, bool b)
+PR_EXPORT void wv_chromium_set_transparent_background(WIBase *p, bool b)
 {
 	auto *pWeb = dynamic_cast<WIWeb *>(p);
 	if(pWeb == nullptr)
@@ -141,9 +134,9 @@ PRAGMA_EXPORT void wv_chromium_set_transparent_background(WIBase *p, bool b)
 	pWeb->SetTransparentBackground(b);
 }
 
-PRAGMA_EXPORT void wv_chromium_register_javascript_function(const char *name, cef::JSValue *(*const fCallback)(cef::JSValue *, uint32_t)) { cef::get_wrapper().register_javascript_function(name, fCallback); }
+PR_EXPORT void wv_chromium_register_javascript_function(const char *name, cef::JSValue *(*const fCallback)(cef::JSValue *, uint32_t)) { cef::get_wrapper().register_javascript_function(name, fCallback); }
 
-PRAGMA_EXPORT void wv_chromium_exec_javascript(WIBase *p, const std::string &js)
+PR_EXPORT void wv_chromium_exec_javascript(WIBase *p, const std::string &js)
 {
 	auto *pWeb = dynamic_cast<WIWeb *>(p);
 	if(pWeb == nullptr)

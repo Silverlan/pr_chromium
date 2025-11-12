@@ -1,20 +1,12 @@
 // SPDX-FileCopyrightText: (c) 2021 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
-#ifndef __WIWEB_HPP__
-#define __WIWEB_HPP__
+export module pragma.modules.chromium:gui_web;
 
-#include <wgui/types/wirect.h>
-#include <image/prosper_texture.hpp>
-#include "chromium_wrapper.hpp"
+export import :wrapper;
+export import pragma.gui;
 
-#ifdef __linux__
-#define DLLEXPORT __attribute__((visibility("default")))
-#else
-#define DLLEXPORT __declspec(dllexport)
-#endif
-
-class DLLEXPORT WIWeb : public WITexturedRect {
+export class PR_EXPORT WIWeb : public WITexturedRect {
   public:
 	static void register_callbacks();
 
@@ -96,5 +88,3 @@ class DLLEXPORT WIWeb : public WITexturedRect {
 	std::shared_ptr<cef::CWebBrowserClient> m_browserClient = nullptr;
 	std::shared_ptr<cef::CWebBrowser> m_browser = nullptr;
 };
-
-#endif

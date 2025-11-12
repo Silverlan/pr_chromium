@@ -1,13 +1,12 @@
 // SPDX-FileCopyrightText: (c) 2022 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
-#ifndef __CHROMIUM_WRAPPER_HPP__
-#define __CHROMIUM_WRAPPER_HPP__
+export module pragma.modules.chromium:wrapper;
 
-#include "util_javascript.hpp"
-#include <sharedutils/util_library.hpp>
+export import :javascript;
+export import pragma.util;
 
-namespace cef {
+export namespace cef {
 	enum class Modifier : uint32_t {
 		None = 0,
 		CapsLockOn = 1,
@@ -102,7 +101,11 @@ namespace cef {
 		bool m_bValid = false;
 	};
 	IChromiumWrapper &get_wrapper();
+	using namespace umath::scoped_enum::bitwise;
 };
-REGISTER_BASIC_BITWISE_OPERATORS(cef::Modifier)
-
-#endif
+export {
+	namespace umath::scoped_enum::bitwise {
+		template<>
+		struct enable_bitwise_operators<cef::Modifier> : std::true_type {};
+	}
+}

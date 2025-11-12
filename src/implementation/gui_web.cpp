@@ -1,31 +1,20 @@
 // SPDX-FileCopyrightText: (c) 2021 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
-#include <prosper_context.hpp>
-#include <prosper_util.hpp>
-#include <image/prosper_sampler.hpp>
-#include <buffers/prosper_buffer.hpp>
-#include <pragma/lua/libraries/c_gui_callbacks.hpp>
-#include <pragma/c_engine.h>
-// #include <pragma/engine.h>
-#include "wiweb.hpp"
-#include <prosper_window.hpp>
-#include <prosper_command_buffer.hpp>
-#include <fsys/filesystem.h>
-#include <wgui/types/wiroot.h>
-#include <memory>
+module;
 
 #if __linux__
 #include <linux/input-event-codes.h> //for key defines
 #endif
 
-extern DLLCLIENT CEngine *c_engine;
+module pragma.modules.chromium;
 
-LINK_WGUI_TO_CLASS(WIWeb, WIWeb);
+import :gui_web;
+import pragma.client;
 
 void WIWeb::register_callbacks()
 {
-	Lua::gui::register_lua_callback("wiweb", "OnDownloadStarted", [](WIBase &el, lua_State *l, const std::function<void(const std::function<void()> &)> &callLuaFunc) -> CallbackHandle {
+	Lua::gui::register_lua_callback("wiweb", "OnDownloadStarted", [](WIBase &el, lua::State *l, const std::function<void(const std::function<void()> &)> &callLuaFunc) -> CallbackHandle {
 		return FunctionCallback<void, uint32_t, util::Path>::Create([l, callLuaFunc](uint32_t id, util::Path path) {
 			callLuaFunc([l, id, &path]() {
 				Lua::Push(l, id);
@@ -33,7 +22,7 @@ void WIWeb::register_callbacks()
 			});
 		});
 	});
-	Lua::gui::register_lua_callback("wiweb", "OnDownloadUpdate", [](WIBase &el, lua_State *l, const std::function<void(const std::function<void()> &)> &callLuaFunc) -> CallbackHandle {
+	Lua::gui::register_lua_callback("wiweb", "OnDownloadUpdate", [](WIBase &el, lua::State *l, const std::function<void(const std::function<void()> &)> &callLuaFunc) -> CallbackHandle {
 		return FunctionCallback<void, uint32_t, cef::IChromiumWrapper::DownloadState, int>::Create([l, callLuaFunc](uint32_t id, cef::IChromiumWrapper::DownloadState state, int percentage) {
 			callLuaFunc([l, id, state, percentage]() {
 				Lua::Push(l, id);
@@ -43,10 +32,10 @@ void WIWeb::register_callbacks()
 		});
 	});
 	Lua::gui::register_lua_callback("wiweb", "OnAddressChanged",
-	  [](WIBase &el, lua_State *l, const std::function<void(const std::function<void()> &)> &callLuaFunc) -> CallbackHandle { return FunctionCallback<void, std::string>::Create([l, callLuaFunc](std::string address) { callLuaFunc([l, &address]() { Lua::PushString(l, address); }); }); });
+	  [](WIBase &el, lua::State *l, const std::function<void(const std::function<void()> &)> &callLuaFunc) -> CallbackHandle { return FunctionCallback<void, std::string>::Create([l, callLuaFunc](std::string address) { callLuaFunc([l, &address]() { Lua::PushString(l, address); }); }); });
 	Lua::gui::register_lua_callback("wiweb", "OnLoadEnd",
-	  [](WIBase &el, lua_State *l, const std::function<void(const std::function<void()> &)> &callLuaFunc) -> CallbackHandle { return FunctionCallback<void, int>::Create([l, callLuaFunc](int httpStatusCode) { callLuaFunc([l, httpStatusCode]() { Lua::PushInt(l, httpStatusCode); }); }); });
-	Lua::gui::register_lua_callback("wiweb", "OnLoadError", [](WIBase &el, lua_State *l, const std::function<void(const std::function<void()> &)> &callLuaFunc) -> CallbackHandle {
+	  [](WIBase &el, lua::State *l, const std::function<void(const std::function<void()> &)> &callLuaFunc) -> CallbackHandle { return FunctionCallback<void, int>::Create([l, callLuaFunc](int httpStatusCode) { callLuaFunc([l, httpStatusCode]() { Lua::PushInt(l, httpStatusCode); }); }); });
+	Lua::gui::register_lua_callback("wiweb", "OnLoadError", [](WIBase &el, lua::State *l, const std::function<void(const std::function<void()> &)> &callLuaFunc) -> CallbackHandle {
 		return FunctionCallback<void, int, std::string, std::string>::Create([l, callLuaFunc](int errorCode, std::string errorText, std::string failedUrl) {
 			callLuaFunc([l, errorCode, &errorText, &failedUrl]() {
 				Lua::PushInt(l, errorCode);
@@ -56,8 +45,8 @@ void WIWeb::register_callbacks()
 		});
 	});
 	Lua::gui::register_lua_callback("wiweb", "OnLoadStart",
-	  [](WIBase &el, lua_State *l, const std::function<void(const std::function<void()> &)> &callLuaFunc) -> CallbackHandle { return FunctionCallback<void, int>::Create([l, callLuaFunc](int transitionType) { callLuaFunc([l, transitionType]() { Lua::PushInt(l, transitionType); }); }); });
-	Lua::gui::register_lua_callback("wiweb", "OnLoadingStateChange", [](WIBase &el, lua_State *l, const std::function<void(const std::function<void()> &)> &callLuaFunc) -> CallbackHandle {
+	  [](WIBase &el, lua::State *l, const std::function<void(const std::function<void()> &)> &callLuaFunc) -> CallbackHandle { return FunctionCallback<void, int>::Create([l, callLuaFunc](int transitionType) { callLuaFunc([l, transitionType]() { Lua::PushInt(l, transitionType); }); }); });
+	Lua::gui::register_lua_callback("wiweb", "OnLoadingStateChange", [](WIBase &el, lua::State *l, const std::function<void(const std::function<void()> &)> &callLuaFunc) -> CallbackHandle {
 		return FunctionCallback<void, bool, bool, bool>::Create([l, callLuaFunc](bool isLoading, bool canGoBack, bool canGoForward) {
 			callLuaFunc([l, isLoading, canGoBack, canGoForward]() {
 				Lua::PushBool(l, isLoading);
@@ -81,9 +70,9 @@ WIWeb::WIWeb() : WITexturedRect()
 	RegisterCallback<void, bool, bool, bool>("OnLoadingStateChange");
 
 	if(g_webElements.empty()) {
-		g_preRecordGuiCb = c_engine->AddCallback("PreRecordGUI", FunctionCallback<void>::Create([]() {
-			auto &context = c_engine->GetRenderContext();
-			auto &window = c_engine->GetWindow();
+		g_preRecordGuiCb = pragma::get_cengine()->AddCallback("PreRecordGUI", FunctionCallback<void>::Create([]() {
+			auto &context = pragma::get_cengine()->GetRenderContext();
+			auto &window = pragma::get_cengine()->GetWindow();
 			auto &drawCmd = window.GetDrawCommandBuffer();
 			for(auto *el : g_webElements)
 				el->CopyDirtyRectsToImage(*drawCmd);
@@ -242,7 +231,7 @@ bool WIWeb::Resize()
 
 	// Clear to white color
 	std::vector<std::array<uint8_t, 4>> clearColData;
-	auto clearCol = Color::White;
+	auto clearCol = colors::White;
 	clearColData.resize(imgCreateInfo.width * imgCreateInfo.height, std::array<uint8_t, 4> {static_cast<uint8_t>(clearCol.r), static_cast<uint8_t>(clearCol.g), static_cast<uint8_t>(clearCol.b), static_cast<uint8_t>(clearCol.a)});
 
 	auto stagingBuffer = context.CreateBuffer(bufCreateInfo, clearColData.data());
