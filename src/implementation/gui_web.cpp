@@ -132,32 +132,32 @@ void WIWeb::Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd
 	if(m_browserClient == nullptr)
 		return;
 
-	if (!m_wasReloaded) {
+	if(!m_wasReloaded) {
 		// Somtimes when loading a page in the chromium browser for the first time,
 		// the "network system" crashes for an unknown reason, causing the page to fail to load.
 		// As a workaround, we just reload the page after a short period of time (the crash
 		// only ever happens if the page is loaded immediately after initialization).
-		if (!m_initialReloadTimePoint)
+		if(!m_initialReloadTimePoint)
 			m_initialReloadTimePoint = std::chrono::steady_clock::now();
 		auto t = std::chrono::steady_clock::now();
-		auto dt = t -*m_initialReloadTimePoint;
-		if (std::chrono::duration_cast<std::chrono::milliseconds>(dt).count() > 500) {
+		auto dt = t - *m_initialReloadTimePoint;
+		if(std::chrono::duration_cast<std::chrono::milliseconds>(dt).count() > 500) {
 			m_wasReloaded = true;
 			cef::get_wrapper().browser_reload(GetBrowser());
 		}
 	}
 
-	if (m_webRenderer && m_browser && cef::get_wrapper().render_handler_is_renderer_size_mismatched(m_webRenderer.get())) {
-		if (!m_scheduledRendererReload)
-			m_scheduledRendererReload = std::chrono::steady_clock::now() +std::chrono::milliseconds(200);
-		if (m_scheduledRendererReload) {
-			if (std::chrono::steady_clock::now() >= *m_scheduledRendererReload) {
+	if(m_webRenderer && m_browser && cef::get_wrapper().render_handler_is_renderer_size_mismatched(m_webRenderer.get())) {
+		if(!m_scheduledRendererReload)
+			m_scheduledRendererReload = std::chrono::steady_clock::now() + std::chrono::milliseconds(200);
+		if(m_scheduledRendererReload) {
+			if(std::chrono::steady_clock::now() >= *m_scheduledRendererReload) {
 				cef::get_wrapper().browser_was_resized(m_browser.get());
 				m_scheduledRendererReload = {};
 			}
 		}
 	}
-	else if (m_scheduledRendererReload)
+	else if(m_scheduledRendererReload)
 		m_scheduledRendererReload = {};
 
 	if(m_webRenderer)
@@ -303,8 +303,8 @@ bool WIWeb::InitializeChromiumBrowser()
 	  },
 	  [](cef::CWebRenderHandler *renderHandler, int &x, int &y, int &w, int &h) {
 		  auto *el = static_cast<WIWeb *>(cef::get_wrapper().render_handler_get_user_data(renderHandler));
-		  w = el->m_browserViewSize.x;//el->GetWidth();
-		  h = el->m_browserViewSize.y;//el->GetHeight();
+		  w = el->m_browserViewSize.x; //el->GetWidth();
+		  h = el->m_browserViewSize.y; //el->GetHeight();
 		  w = umath::max(w, 1);
 		  h = umath::max(h, 1);
 
@@ -429,7 +429,7 @@ void WIWeb::SetBrowserViewSize(Vector2i size)
 	size.x = umath::max(size.x, 1);
 	size.y = umath::max(size.y, 1);
 	m_browserViewSize = size;
-	if (GetBrowser())
+	if(GetBrowser())
 		cef::get_wrapper().browser_was_resized(GetBrowser());
 }
 const Vector2i &WIWeb::GetBrowserViewSize() const { return m_browserViewSize; }
