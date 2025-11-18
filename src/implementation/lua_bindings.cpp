@@ -1,15 +1,10 @@
 // SPDX-FileCopyrightText: (c) 2021 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
-#include "lchromium.hpp"
-#include "wiweb.hpp"
-#include "wvmodule.hpp"
-#include "wiweb.hpp"
-#include <pragma/lua/luaapi.h>
-#include <pragma/lua/converters/optional_converter_t.hpp>
-#include <luabind/copy_policy.hpp>
-#include <luasystem.h>
-#include <luainterface.hpp>
+module pragma.modules.chromium;
+
+import :lua_bindings;
+import pragma.shared;
 
 static void register_wiweb_class(Lua::Interface &l)
 {
@@ -46,7 +41,7 @@ static void register_wiweb_class(Lua::Interface &l)
 
 	auto &modChromium = l.RegisterLibrary("chromium");
 	modChromium[luabind::def(
-	  "parse_url", +[](lua_State *l, const std::string &url) -> std::optional<luabind::map<std::string, std::string>> {
+	  "parse_url", +[](lua::State *l, const std::string &url) -> std::optional<luabind::map<std::string, std::string>> {
 		  luabind::object t = luabind::newtable(l);
 		  auto success = cef::get_wrapper().parse_url(
 		    url.c_str(),

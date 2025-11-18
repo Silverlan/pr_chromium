@@ -1,14 +1,12 @@
 // SPDX-FileCopyrightText: (c) 2021 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
-#ifndef __LCHROMIUM_HPP__
-#define __LCHROMIUM_HPP__
+export module pragma.modules.chromium:lua_bindings;
 
-namespace Lua {
-	class Interface;
+export import pragma.lua;
+
+export namespace Lua {
 	namespace chromium {
 		void register_library(Lua::Interface &l);
 	}
 };
-
-#endif

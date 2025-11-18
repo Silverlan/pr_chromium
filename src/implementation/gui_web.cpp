@@ -1,31 +1,20 @@
 // SPDX-FileCopyrightText: (c) 2021 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
-#include <prosper_context.hpp>
-#include <prosper_util.hpp>
-#include <image/prosper_sampler.hpp>
-#include <buffers/prosper_buffer.hpp>
-#include <pragma/lua/libraries/c_gui_callbacks.hpp>
-#include <pragma/c_engine.h>
-// #include <pragma/engine.h>
-#include "wiweb.hpp"
-#include <prosper_window.hpp>
-#include <prosper_command_buffer.hpp>
-#include <fsys/filesystem.h>
-#include <wgui/types/wiroot.h>
-#include <memory>
+module;
 
 #if __linux__
 #include <linux/input-event-codes.h> //for key defines
 #endif
 
-extern DLLCLIENT CEngine *c_engine;
+module pragma.modules.chromium;
 
-LINK_WGUI_TO_CLASS(WIWeb, WIWeb);
+import :gui_web;
+import pragma.client;
 
 void WIWeb::register_callbacks()
 {
-	Lua::gui::register_lua_callback("wiweb", "OnDownloadStarted", [](WIBase &el, lua_State *l, const std::function<void(const std::function<void()> &)> &callLuaFunc) -> CallbackHandle {
+	Lua::gui::register_lua_callback("wiweb", "OnDownloadStarted", [](WIBase &el, lua::State *l, const std::function<void(const std::function<void()> &)> &callLuaFunc) -> CallbackHandle {
 		return FunctionCallback<void, uint32_t, util::Path>::Create([l, callLuaFunc](uint32_t id, util::Path path) {
 			callLuaFunc([l, id, &path]() {
 				Lua::Push(l, id);
@@ -33,7 +22,7 @@ void WIWeb::register_callbacks()
 			});
 		});
 	});
-	Lua::gui::register_lua_callback("wiweb", "OnDownloadUpdate", [](WIBase &el, lua_State *l, const std::function<void(const std::function<void()> &)> &callLuaFunc) -> CallbackHandle {
+	Lua::gui::register_lua_callback("wiweb", "OnDownloadUpdate", [](WIBase &el, lua::State *l, const std::function<void(const std::function<void()> &)> &callLuaFunc) -> CallbackHandle {
 		return FunctionCallback<void, uint32_t, cef::IChromiumWrapper::DownloadState, int>::Create([l, callLuaFunc](uint32_t id, cef::IChromiumWrapper::DownloadState state, int percentage) {
 			callLuaFunc([l, id, state, percentage]() {
 				Lua::Push(l, id);
@@ -43,10 +32,10 @@ void WIWeb::register_callbacks()
 		});
 	});
 	Lua::gui::register_lua_callback("wiweb", "OnAddressChanged",
-	  [](WIBase &el, lua_State *l, const std::function<void(const std::function<void()> &)> &callLuaFunc) -> CallbackHandle { return FunctionCallback<void, std::string>::Create([l, callLuaFunc](std::string address) { callLuaFunc([l, &address]() { Lua::PushString(l, address); }); }); });
+	  [](WIBase &el, lua::State *l, const std::function<void(const std::function<void()> &)> &callLuaFunc) -> CallbackHandle { return FunctionCallback<void, std::string>::Create([l, callLuaFunc](std::string address) { callLuaFunc([l, &address]() { Lua::PushString(l, address); }); }); });
 	Lua::gui::register_lua_callback("wiweb", "OnLoadEnd",
-	  [](WIBase &el, lua_State *l, const std::function<void(const std::function<void()> &)> &callLuaFunc) -> CallbackHandle { return FunctionCallback<void, int>::Create([l, callLuaFunc](int httpStatusCode) { callLuaFunc([l, httpStatusCode]() { Lua::PushInt(l, httpStatusCode); }); }); });
-	Lua::gui::register_lua_callback("wiweb", "OnLoadError", [](WIBase &el, lua_State *l, const std::function<void(const std::function<void()> &)> &callLuaFunc) -> CallbackHandle {
+	  [](WIBase &el, lua::State *l, const std::function<void(const std::function<void()> &)> &callLuaFunc) -> CallbackHandle { return FunctionCallback<void, int>::Create([l, callLuaFunc](int httpStatusCode) { callLuaFunc([l, httpStatusCode]() { Lua::PushInt(l, httpStatusCode); }); }); });
+	Lua::gui::register_lua_callback("wiweb", "OnLoadError", [](WIBase &el, lua::State *l, const std::function<void(const std::function<void()> &)> &callLuaFunc) -> CallbackHandle {
 		return FunctionCallback<void, int, std::string, std::string>::Create([l, callLuaFunc](int errorCode, std::string errorText, std::string failedUrl) {
 			callLuaFunc([l, errorCode, &errorText, &failedUrl]() {
 				Lua::PushInt(l, errorCode);
@@ -56,8 +45,8 @@ void WIWeb::register_callbacks()
 		});
 	});
 	Lua::gui::register_lua_callback("wiweb", "OnLoadStart",
-	  [](WIBase &el, lua_State *l, const std::function<void(const std::function<void()> &)> &callLuaFunc) -> CallbackHandle { return FunctionCallback<void, int>::Create([l, callLuaFunc](int transitionType) { callLuaFunc([l, transitionType]() { Lua::PushInt(l, transitionType); }); }); });
-	Lua::gui::register_lua_callback("wiweb", "OnLoadingStateChange", [](WIBase &el, lua_State *l, const std::function<void(const std::function<void()> &)> &callLuaFunc) -> CallbackHandle {
+	  [](WIBase &el, lua::State *l, const std::function<void(const std::function<void()> &)> &callLuaFunc) -> CallbackHandle { return FunctionCallback<void, int>::Create([l, callLuaFunc](int transitionType) { callLuaFunc([l, transitionType]() { Lua::PushInt(l, transitionType); }); }); });
+	Lua::gui::register_lua_callback("wiweb", "OnLoadingStateChange", [](WIBase &el, lua::State *l, const std::function<void(const std::function<void()> &)> &callLuaFunc) -> CallbackHandle {
 		return FunctionCallback<void, bool, bool, bool>::Create([l, callLuaFunc](bool isLoading, bool canGoBack, bool canGoForward) {
 			callLuaFunc([l, isLoading, canGoBack, canGoForward]() {
 				Lua::PushBool(l, isLoading);
@@ -81,9 +70,9 @@ WIWeb::WIWeb() : WITexturedRect()
 	RegisterCallback<void, bool, bool, bool>("OnLoadingStateChange");
 
 	if(g_webElements.empty()) {
-		g_preRecordGuiCb = c_engine->AddCallback("PreRecordGUI", FunctionCallback<void>::Create([]() {
-			auto &context = c_engine->GetRenderContext();
-			auto &window = c_engine->GetWindow();
+		g_preRecordGuiCb = pragma::get_cengine()->AddCallback("PreRecordGUI", FunctionCallback<void>::Create([]() {
+			auto &context = pragma::get_cengine()->GetRenderContext();
+			auto &window = pragma::get_cengine()->GetWindow();
 			auto &drawCmd = window.GetDrawCommandBuffer();
 			for(auto *el : g_webElements)
 				el->CopyDirtyRectsToImage(*drawCmd);
@@ -143,32 +132,32 @@ void WIWeb::Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd
 	if(m_browserClient == nullptr)
 		return;
 
-	if (!m_wasReloaded) {
+	if(!m_wasReloaded) {
 		// Somtimes when loading a page in the chromium browser for the first time,
 		// the "network system" crashes for an unknown reason, causing the page to fail to load.
 		// As a workaround, we just reload the page after a short period of time (the crash
 		// only ever happens if the page is loaded immediately after initialization).
-		if (!m_initialReloadTimePoint)
+		if(!m_initialReloadTimePoint)
 			m_initialReloadTimePoint = std::chrono::steady_clock::now();
 		auto t = std::chrono::steady_clock::now();
-		auto dt = t -*m_initialReloadTimePoint;
-		if (std::chrono::duration_cast<std::chrono::milliseconds>(dt).count() > 500) {
+		auto dt = t - *m_initialReloadTimePoint;
+		if(std::chrono::duration_cast<std::chrono::milliseconds>(dt).count() > 500) {
 			m_wasReloaded = true;
 			cef::get_wrapper().browser_reload(GetBrowser());
 		}
 	}
 
-	if (m_webRenderer && m_browser && cef::get_wrapper().render_handler_is_renderer_size_mismatched(m_webRenderer.get())) {
-		if (!m_scheduledRendererReload)
-			m_scheduledRendererReload = std::chrono::steady_clock::now() +std::chrono::milliseconds(200);
-		if (m_scheduledRendererReload) {
-			if (std::chrono::steady_clock::now() >= *m_scheduledRendererReload) {
+	if(m_webRenderer && m_browser && cef::get_wrapper().render_handler_is_renderer_size_mismatched(m_webRenderer.get())) {
+		if(!m_scheduledRendererReload)
+			m_scheduledRendererReload = std::chrono::steady_clock::now() + std::chrono::milliseconds(200);
+		if(m_scheduledRendererReload) {
+			if(std::chrono::steady_clock::now() >= *m_scheduledRendererReload) {
 				cef::get_wrapper().browser_was_resized(m_browser.get());
 				m_scheduledRendererReload = {};
 			}
 		}
 	}
-	else if (m_scheduledRendererReload)
+	else if(m_scheduledRendererReload)
 		m_scheduledRendererReload = {};
 
 	if(m_webRenderer)
@@ -242,7 +231,7 @@ bool WIWeb::Resize()
 
 	// Clear to white color
 	std::vector<std::array<uint8_t, 4>> clearColData;
-	auto clearCol = Color::White;
+	auto clearCol = colors::White;
 	clearColData.resize(imgCreateInfo.width * imgCreateInfo.height, std::array<uint8_t, 4> {static_cast<uint8_t>(clearCol.r), static_cast<uint8_t>(clearCol.g), static_cast<uint8_t>(clearCol.b), static_cast<uint8_t>(clearCol.a)});
 
 	auto stagingBuffer = context.CreateBuffer(bufCreateInfo, clearColData.data());
@@ -314,8 +303,8 @@ bool WIWeb::InitializeChromiumBrowser()
 	  },
 	  [](cef::CWebRenderHandler *renderHandler, int &x, int &y, int &w, int &h) {
 		  auto *el = static_cast<WIWeb *>(cef::get_wrapper().render_handler_get_user_data(renderHandler));
-		  w = el->m_browserViewSize.x;//el->GetWidth();
-		  h = el->m_browserViewSize.y;//el->GetHeight();
+		  w = el->m_browserViewSize.x; //el->GetWidth();
+		  h = el->m_browserViewSize.y; //el->GetHeight();
 		  w = umath::max(w, 1);
 		  h = umath::max(h, 1);
 
@@ -440,7 +429,7 @@ void WIWeb::SetBrowserViewSize(Vector2i size)
 	size.x = umath::max(size.x, 1);
 	size.y = umath::max(size.y, 1);
 	m_browserViewSize = size;
-	if (GetBrowser())
+	if(GetBrowser())
 		cef::get_wrapper().browser_was_resized(GetBrowser());
 }
 const Vector2i &WIWeb::GetBrowserViewSize() const { return m_browserViewSize; }
