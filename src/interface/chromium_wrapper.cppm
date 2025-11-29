@@ -1,6 +1,10 @@
 // SPDX-FileCopyrightText: (c) 2022 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
+module;
+
+#include "util_enum_flags.hpp"
+
 export module pragma.modules.chromium:wrapper;
 
 export import :javascript;
@@ -104,8 +108,5 @@ export namespace cef {
 	using namespace umath::scoped_enum::bitwise;
 };
 export {
-	namespace umath::scoped_enum::bitwise {
-		template<>
-		struct enable_bitwise_operators<cef::Modifier> : std::true_type {};
-	}
+	REGISTER_ENUM_FLAGS(cef::Modifier)
 }
