@@ -35,7 +35,7 @@ static bool initialize_chromium(std::string &outErr)
 		return *initResult;
 	initResult = false;
 
-	WGUI::GetInstance().RegisterType<WIWeb>("WIWeb");
+	pragma::gui::WGUI::GetInstance().RegisterType<pragma::gui::types::WIWeb>("WIWeb");
 
 	std::string err;
 
@@ -100,7 +100,7 @@ void PR_EXPORT pragma_detach() { release_chromium(); }
 void PR_EXPORT pragma_initialize_lua(Lua::Interface &l)
 {
 	Lua::chromium::register_library(l);
-	WIWeb::register_callbacks();
+	pragma::gui::types::WIWeb::register_callbacks();
 
 	// GUI classes have to be registered for the client-state AND the GUI-state,
 	// so we have to tell the engine that we need to be registered for both whenever we're loaded.
@@ -110,25 +110,25 @@ void PR_EXPORT pragma_initialize_lua(Lua::Interface &l)
 
 extern "C" {
 
-PR_EXPORT void wv_chromium_load_url(WIBase *p, const std::string &url)
+PR_EXPORT void wv_chromium_load_url(pragma::gui::types::WIBase *p, const std::string &url)
 {
-	auto *pWeb = dynamic_cast<WIWeb *>(p);
+	auto *pWeb = dynamic_cast<pragma::gui::types::WIWeb *>(p);
 	if(pWeb == nullptr)
 		return;
 	pWeb->LoadURL(url);
 }
 
-PR_EXPORT void wv_chromium_set_browser_view_size(WIBase *p, const Vector2i &viewSize)
+PR_EXPORT void wv_chromium_set_browser_view_size(pragma::gui::types::WIBase *p, const Vector2i &viewSize)
 {
-	auto *pWeb = dynamic_cast<WIWeb *>(p);
+	auto *pWeb = dynamic_cast<pragma::gui::types::WIWeb *>(p);
 	if(pWeb == nullptr)
 		return;
 	pWeb->SetBrowserViewSize(viewSize);
 }
 
-PR_EXPORT void wv_chromium_set_transparent_background(WIBase *p, bool b)
+PR_EXPORT void wv_chromium_set_transparent_background(pragma::gui::types::WIBase *p, bool b)
 {
-	auto *pWeb = dynamic_cast<WIWeb *>(p);
+	auto *pWeb = dynamic_cast<pragma::gui::types::WIWeb *>(p);
 	if(pWeb == nullptr)
 		return;
 	pWeb->SetTransparentBackground(b);
@@ -136,9 +136,9 @@ PR_EXPORT void wv_chromium_set_transparent_background(WIBase *p, bool b)
 
 PR_EXPORT void wv_chromium_register_javascript_function(const char *name, cef::JSValue *(*const fCallback)(cef::JSValue *, uint32_t)) { cef::get_wrapper().register_javascript_function(name, fCallback); }
 
-PR_EXPORT void wv_chromium_exec_javascript(WIBase *p, const std::string &js)
+PR_EXPORT void wv_chromium_exec_javascript(pragma::gui::types::WIBase *p, const std::string &js)
 {
-	auto *pWeb = dynamic_cast<WIWeb *>(p);
+	auto *pWeb = dynamic_cast<pragma::gui::types::WIWeb *>(p);
 	if(pWeb == nullptr)
 		return;
 	auto *browser = pWeb->GetBrowser();

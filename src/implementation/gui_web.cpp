@@ -12,7 +12,7 @@ module pragma.modules.chromium;
 import :gui_web;
 import pragma.client;
 
-void WIWeb::register_callbacks()
+void pragma::gui::types::WIWeb::register_callbacks()
 {
 	Lua::gui::register_lua_callback("wiweb", "OnDownloadStarted", [](WIBase &el, lua::State *l, const std::function<void(const std::function<void()> &)> &callLuaFunc) -> CallbackHandle {
 		return FunctionCallback<void, uint32_t, util::Path>::Create([l, callLuaFunc](uint32_t id, util::Path path) {
@@ -57,9 +57,9 @@ void WIWeb::register_callbacks()
 	});
 }
 
-static std::vector<WIWeb *> g_webElements {};
+static std::vector<pragma::gui::types::WIWeb *> g_webElements {};
 static CallbackHandle g_preRecordGuiCb {};
-WIWeb::WIWeb() : WITexturedRect()
+pragma::gui::types::WIWeb::WIWeb() : WITexturedRect()
 {
 	RegisterCallback<void, uint32_t, util::Path>("OnDownloadStarted");
 	RegisterCallback<void, uint32_t, cef::IChromiumWrapper::DownloadState, int>("OnDownloadUpdate");
@@ -81,7 +81,7 @@ WIWeb::WIWeb() : WITexturedRect()
 	g_webElements.push_back(this);
 }
 
-WIWeb::~WIWeb()
+pragma::gui::types::WIWeb::~WIWeb()
 {
 	Close();
 	ClearTexture();
@@ -97,7 +97,7 @@ WIWeb::~WIWeb()
 		g_preRecordGuiCb.Remove();
 }
 
-void WIWeb::CloseBrowserSafely()
+void pragma::gui::types::WIWeb::CloseBrowserSafely()
 {
 	auto *browser = GetBrowser();
 	if(browser == nullptr)
@@ -117,7 +117,7 @@ void WIWeb::CloseBrowserSafely()
 	pragma::get_engine()->AddCallback("Think", cb);*/
 }
 
-void WIWeb::Initialize()
+void pragma::gui::types::WIWeb::Initialize()
 {
 	WITexturedRect::Initialize();
 	SetKeyboardInputEnabled(true);
@@ -126,7 +126,7 @@ void WIWeb::Initialize()
 	SetScrollInputEnabled(true);
 }
 
-void WIWeb::Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd)
+void pragma::gui::types::WIWeb::Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd)
 {
 	WIBase::Think(drawCmd);
 	if(m_browserClient == nullptr)
@@ -165,7 +165,7 @@ void WIWeb::Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd
 	cef::get_wrapper().do_message_loop_work();
 }
 
-void WIWeb::ClearTexture()
+void pragma::gui::types::WIWeb::ClearTexture()
 {
 	if(m_imgDataPtr) {
 		if(m_webRenderer)
@@ -176,25 +176,25 @@ void WIWeb::ClearTexture()
 	m_texture = nullptr;
 }
 
-void WIWeb::DoUpdate()
+void pragma::gui::types::WIWeb::DoUpdate()
 {
 	WITexturedRect::DoUpdate();
 	InitializeChromiumBrowser();
 	Resize();
 }
 
-void WIWeb::SetTransparentBackground(bool b) { m_bTransparentBackground = b; }
+void pragma::gui::types::WIWeb::SetTransparentBackground(bool b) { m_bTransparentBackground = b; }
 
-void WIWeb::SetInitialUrl(std::string url) { m_initialUrl = std::move(url); }
+void pragma::gui::types::WIWeb::SetInitialUrl(std::string url) { m_initialUrl = std::move(url); }
 
-void WIWeb::ExecuteJavaScript(const std::string &js)
+void pragma::gui::types::WIWeb::ExecuteJavaScript(const std::string &js)
 {
 	auto *browser = GetBrowser();
 	if(browser)
 		cef::get_wrapper().browser_execute_java_script(browser, js.c_str(), nullptr);
 }
 
-bool WIWeb::Resize()
+bool pragma::gui::types::WIWeb::Resize()
 {
 	if(m_texture) {
 		auto &img = m_texture->GetImage();
@@ -203,7 +203,7 @@ bool WIWeb::Resize()
 	}
 	ClearTexture();
 
-	auto &context = WGUI::GetInstance().GetContext();
+	auto &context = pragma::gui::WGUI::GetInstance().GetContext();
 	if(m_browserViewSize.x == 0 || m_browserViewSize.y == 0)
 		return false;
 	prosper::util::ImageCreateInfo imgCreateInfo {};
@@ -249,7 +249,7 @@ bool WIWeb::Resize()
 	return true;
 }
 
-void WIWeb::CopyDirtyRectsToImage(prosper::ICommandBuffer &drawCmd)
+void pragma::gui::types::WIWeb::CopyDirtyRectsToImage(prosper::ICommandBuffer &drawCmd)
 {
 	if(!m_webRenderer)
 		return;
@@ -278,14 +278,14 @@ void WIWeb::CopyDirtyRectsToImage(prosper::ICommandBuffer &drawCmd)
 	drawCmd.RecordImageBarrier(img, prosper::ImageLayout::TransferDstOptimal, prosper::ImageLayout::ShaderReadOnlyOptimal);
 }
 
-bool WIWeb::InitializeChromiumBrowser()
+bool pragma::gui::types::WIWeb::InitializeChromiumBrowser()
 {
 	if(m_browserInitialized)
 		return true;
 	m_browserInitialized = true;
 	auto renderHandler = cef::get_wrapper().render_handler_create(
 	  [](cef::CWebRenderHandler *renderHandler, int &x, int &y, int &w, int &h) {
-		  auto &context = WGUI::GetInstance().GetContext();
+		  auto &context = pragma::gui::WGUI::GetInstance().GetContext();
 		  auto &window = context.GetWindow();
 		  if(!window.IsValid()) {
 			  x = 0;
@@ -314,7 +314,7 @@ bool WIWeb::InitializeChromiumBrowser()
 			  h = extents.height;
 		  }
 
-		  auto &context = WGUI::GetInstance().GetContext();
+		  auto &context = pragma::gui::WGUI::GetInstance().GetContext();
 		  auto &window = context.GetWindow();
 		  if(window.IsValid()) {
 			  auto windowPos = window->GetPos();
@@ -325,7 +325,7 @@ bool WIWeb::InitializeChromiumBrowser()
 	  },
 	  [](cef::CWebRenderHandler *renderHandler, int viewX, int viewY, int &screenX, int &screenY) {
 		  auto *el = static_cast<WIWeb *>(cef::get_wrapper().render_handler_get_user_data(renderHandler));
-		  auto &context = WGUI::GetInstance().GetContext();
+		  auto &context = pragma::gui::WGUI::GetInstance().GetContext();
 		  auto &window = context.GetWindow();
 		  auto windowPos = window.IsValid() ? window->GetPos() : Vector2i {0, 0};
 		  screenX = windowPos.x;
@@ -408,7 +408,7 @@ bool WIWeb::InitializeChromiumBrowser()
 	return true;
 }
 
-void WIWeb::Close()
+void pragma::gui::types::WIWeb::Close()
 {
 	auto *browser = GetBrowser();
 	if(browser == nullptr)
@@ -416,7 +416,7 @@ void WIWeb::Close()
 	cef::get_wrapper().browser_close(browser);
 }
 
-void WIWeb::LoadURL(const std::string &url)
+void pragma::gui::types::WIWeb::LoadURL(const std::string &url)
 {
 	auto *browser = GetBrowser();
 	if(browser == nullptr)
@@ -424,7 +424,7 @@ void WIWeb::LoadURL(const std::string &url)
 	cef::get_wrapper().browser_load_url(browser, url.c_str());
 }
 
-void WIWeb::SetBrowserViewSize(Vector2i size)
+void pragma::gui::types::WIWeb::SetBrowserViewSize(Vector2i size)
 {
 	size.x = umath::max(size.x, 1);
 	size.y = umath::max(size.y, 1);
@@ -432,65 +432,65 @@ void WIWeb::SetBrowserViewSize(Vector2i size)
 	if(GetBrowser())
 		cef::get_wrapper().browser_was_resized(GetBrowser());
 }
-const Vector2i &WIWeb::GetBrowserViewSize() const { return m_browserViewSize; }
+const Vector2i &pragma::gui::types::WIWeb::GetBrowserViewSize() const { return m_browserViewSize; }
 
-bool WIWeb::CanGoBack()
+bool pragma::gui::types::WIWeb::CanGoBack()
 {
 	auto *browser = GetBrowser();
 	if(browser == nullptr)
 		return false;
 	return cef::get_wrapper().browser_can_go_back(browser);
 }
-bool WIWeb::CanGoForward()
+bool pragma::gui::types::WIWeb::CanGoForward()
 {
 	auto *browser = GetBrowser();
 	if(browser == nullptr)
 		return false;
 	return cef::get_wrapper().browser_can_go_forward(browser);
 }
-void WIWeb::GoBack()
+void pragma::gui::types::WIWeb::GoBack()
 {
 	auto *browser = GetBrowser();
 	if(browser == nullptr)
 		return;
 	return cef::get_wrapper().browser_go_back(browser);
 }
-void WIWeb::GoForward()
+void pragma::gui::types::WIWeb::GoForward()
 {
 	auto *browser = GetBrowser();
 	if(browser == nullptr)
 		return;
 	return cef::get_wrapper().browser_go_forward(browser);
 }
-bool WIWeb::HasDocument()
+bool pragma::gui::types::WIWeb::HasDocument()
 {
 	auto *browser = GetBrowser();
 	if(browser == nullptr)
 		return false;
 	return cef::get_wrapper().browser_has_document(browser);
 }
-bool WIWeb::IsLoading()
+bool pragma::gui::types::WIWeb::IsLoading()
 {
 	auto *browser = GetBrowser();
 	if(browser == nullptr)
 		return false;
 	return cef::get_wrapper().browser_is_loading(browser);
 }
-void WIWeb::Reload()
+void pragma::gui::types::WIWeb::Reload()
 {
 	auto *browser = GetBrowser();
 	if(browser == nullptr)
 		return;
 	cef::get_wrapper().browser_reload(browser);
 }
-void WIWeb::ReloadIgnoreCache()
+void pragma::gui::types::WIWeb::ReloadIgnoreCache()
 {
 	auto *browser = GetBrowser();
 	if(browser == nullptr)
 		return;
 	cef::get_wrapper().browser_reload_ignore_cache(browser);
 }
-void WIWeb::StopLoad()
+void pragma::gui::types::WIWeb::StopLoad()
 {
 	auto *browser = GetBrowser();
 	if(browser == nullptr)
@@ -498,63 +498,63 @@ void WIWeb::StopLoad()
 	cef::get_wrapper().browser_stop_load(browser);
 }
 
-void WIWeb::Copy()
+void pragma::gui::types::WIWeb::Copy()
 {
 	auto *browser = GetBrowser();
 	if(browser == nullptr)
 		return;
 	cef::get_wrapper().browser_copy(browser);
 }
-void WIWeb::Cut()
+void pragma::gui::types::WIWeb::Cut()
 {
 	auto *browser = GetBrowser();
 	if(browser == nullptr)
 		return;
 	cef::get_wrapper().browser_cut(browser);
 }
-void WIWeb::Delete()
+void pragma::gui::types::WIWeb::Delete()
 {
 	auto *browser = GetBrowser();
 	if(browser == nullptr)
 		return;
 	cef::get_wrapper().browser_delete(browser);
 }
-void WIWeb::Paste()
+void pragma::gui::types::WIWeb::Paste()
 {
 	auto *browser = GetBrowser();
 	if(browser == nullptr)
 		return;
 	cef::get_wrapper().browser_paste(browser);
 }
-void WIWeb::Redo()
+void pragma::gui::types::WIWeb::Redo()
 {
 	auto *browser = GetBrowser();
 	if(browser == nullptr)
 		return;
 	cef::get_wrapper().browser_redo(browser);
 }
-void WIWeb::SelectAll()
+void pragma::gui::types::WIWeb::SelectAll()
 {
 	auto *browser = GetBrowser();
 	if(browser == nullptr)
 		return;
 	cef::get_wrapper().browser_select_all(browser);
 }
-void WIWeb::Undo()
+void pragma::gui::types::WIWeb::Undo()
 {
 	auto *browser = GetBrowser();
 	if(browser == nullptr)
 		return;
 	cef::get_wrapper().browser_undo(browser);
 }
-void WIWeb::SetZoomLevel(double lv)
+void pragma::gui::types::WIWeb::SetZoomLevel(double lv)
 {
 	auto *browser = GetBrowser();
 	if(browser == nullptr)
 		return;
 	cef::get_wrapper().browser_set_zoom_level(browser, lv);
 }
-double WIWeb::GetZoomLevel()
+double pragma::gui::types::WIWeb::GetZoomLevel()
 {
 	auto *browser = GetBrowser();
 	if(browser == nullptr)
@@ -562,13 +562,13 @@ double WIWeb::GetZoomLevel()
 	return cef::get_wrapper().browser_get_zoom_level(browser);
 }
 
-cef::CWebRenderHandler *WIWeb::GetRenderer() { return m_webRenderer.get(); }
-cef::CWebBrowserClient *WIWeb::GetBrowserClient() { return m_browserClient.get(); }
-cef::CWebBrowser *WIWeb::GetBrowser() { return m_browser.get(); }
+cef::CWebRenderHandler *pragma::gui::types::WIWeb::GetRenderer() { return m_webRenderer.get(); }
+cef::CWebBrowserClient *pragma::gui::types::WIWeb::GetBrowserClient() { return m_browserClient.get(); }
+cef::CWebBrowser *pragma::gui::types::WIWeb::GetBrowser() { return m_browser.get(); }
 
-void WIWeb::OnCursorEntered() { WIBase::OnCursorEntered(); }
-void WIWeb::OnCursorExited() { WIBase::OnCursorExited(); }
-Vector2i WIWeb::GetBrowserMousePos() const
+void pragma::gui::types::WIWeb::OnCursorEntered() { WIBase::OnCursorEntered(); }
+void pragma::gui::types::WIWeb::OnCursorExited() { WIBase::OnCursorExited(); }
+Vector2i pragma::gui::types::WIWeb::GetBrowserMousePos() const
 {
 	auto *elRoot = GetBaseRootElement();
 	if(elRoot && elRoot->GetCursorPosOverride()) {
@@ -578,7 +578,7 @@ Vector2i WIWeb::GetBrowserMousePos() const
 	}
 	return {m_mousePos.x / static_cast<float>(GetWidth()) * m_browserViewSize.x, m_mousePos.y / static_cast<float>(GetHeight()) * m_browserViewSize.y};
 }
-void WIWeb::OnCursorMoved(int x, int y)
+void pragma::gui::types::WIWeb::OnCursorMoved(int x, int y)
 {
 	m_mousePos = {x, y};
 	WIBase::OnCursorMoved(x, y);
@@ -588,7 +588,7 @@ void WIWeb::OnCursorMoved(int x, int y)
 	auto brMousePos = GetBrowserMousePos();
 	cef::get_wrapper().browser_send_event_mouse_move(browser, brMousePos.x, brMousePos.y, !PosInBounds(x, y), m_buttonMods);
 }
-util::EventReply WIWeb::OnDoubleClick()
+util::EventReply pragma::gui::types::WIWeb::OnDoubleClick()
 {
 	WIBase::OnDoubleClick();
 
@@ -599,7 +599,7 @@ util::EventReply WIWeb::OnDoubleClick()
 	cef::get_wrapper().browser_send_event_mouse_click(browser, brMousePos.x, brMousePos.y, 'l', false, 2);
 	return util::EventReply::Handled;
 }
-util::EventReply WIWeb::MouseCallback(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods)
+util::EventReply pragma::gui::types::WIWeb::MouseCallback(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods)
 {
 	switch(button) {
 	case pragma::platform::MouseButton::Left:
@@ -656,7 +656,7 @@ static cef::Modifier get_cef_modifiers(pragma::platform::Modifier mods)
 		cefMods |= cef::Modifier::CommandDown;
 	return cefMods;
 }
-util::EventReply WIWeb::KeyboardCallback(pragma::platform::Key key, int scanCode, pragma::platform::KeyState state, pragma::platform::Modifier mods)
+util::EventReply pragma::gui::types::WIWeb::KeyboardCallback(pragma::platform::Key key, int scanCode, pragma::platform::KeyState state, pragma::platform::Modifier mods)
 {
 	WIBase::KeyboardCallback(key, scanCode, state, mods);
 	auto *browser = GetBrowser();
@@ -1112,7 +1112,7 @@ util::EventReply WIWeb::KeyboardCallback(pragma::platform::Key key, int scanCode
 	cef::get_wrapper().browser_send_event_key(browser, c.has_value() ? *c : systemKey, systemKey, scanCode, press, cefMods);
 	return util::EventReply::Handled;
 }
-util::EventReply WIWeb::CharCallback(unsigned int c, pragma::platform::Modifier mods)
+util::EventReply pragma::gui::types::WIWeb::CharCallback(unsigned int c, pragma::platform::Modifier mods)
 {
 	WIBase::CharCallback(c, mods);
 	auto *browser = GetBrowser();
@@ -1121,7 +1121,7 @@ util::EventReply WIWeb::CharCallback(unsigned int c, pragma::platform::Modifier 
 	cef::get_wrapper().browser_send_event_char(browser, c, get_cef_modifiers(mods) | m_buttonMods);
 	return util::EventReply::Handled;
 }
-util::EventReply WIWeb::ScrollCallback(Vector2 offset, bool offsetAsPixels)
+util::EventReply pragma::gui::types::WIWeb::ScrollCallback(Vector2 offset, bool offsetAsPixels)
 {
 	WIBase::ScrollCallback(offset, offsetAsPixels);
 	auto *browser = GetBrowser();
@@ -1135,7 +1135,7 @@ util::EventReply WIWeb::ScrollCallback(Vector2 offset, bool offsetAsPixels)
 	cef::get_wrapper().browser_send_event_mouse_wheel(browser, brMousePos.x, brMousePos.y, offset.x, offset.y);
 	return util::EventReply::Handled;
 }
-void WIWeb::OnFocusGained()
+void pragma::gui::types::WIWeb::OnFocusGained()
 {
 	WIBase::OnFocusGained();
 	auto *browser = GetBrowser();
@@ -1143,7 +1143,7 @@ void WIWeb::OnFocusGained()
 		return;
 	cef::get_wrapper().browser_set_focus(browser, true);
 }
-void WIWeb::OnFocusKilled()
+void pragma::gui::types::WIWeb::OnFocusKilled()
 {
 	WIBase::OnFocusKilled();
 	auto *browser = GetBrowser();
