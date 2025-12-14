@@ -64,8 +64,8 @@ static void register_wiweb_class(Lua::Interface &l)
 		  return t;
 	  })];
 	Lua::RegisterLibraryEnums(l.GetState(), "chromium",
-	  {{"DOWNLOAD_STATE_DOWNLOADING", umath::to_integral(cef::IChromiumWrapper::DownloadState::Downloading)}, {"DOWNLOAD_STATE_CANCELLED", umath::to_integral(cef::IChromiumWrapper::DownloadState::Cancelled)},
-	    {"DOWNLOAD_STATE_COMPLETE", umath::to_integral(cef::IChromiumWrapper::DownloadState::Complete)}, {"DOWNLOAD_STATE_INVALIDATED", umath::to_integral(cef::IChromiumWrapper::DownloadState::Invalidated)}});
+	  {{"DOWNLOAD_STATE_DOWNLOADING", pragma::math::to_integral(cef::IChromiumWrapper::DownloadState::Downloading)}, {"DOWNLOAD_STATE_CANCELLED", pragma::math::to_integral(cef::IChromiumWrapper::DownloadState::Cancelled)},
+	    {"DOWNLOAD_STATE_COMPLETE", pragma::math::to_integral(cef::IChromiumWrapper::DownloadState::Complete)}, {"DOWNLOAD_STATE_INVALIDATED", pragma::math::to_integral(cef::IChromiumWrapper::DownloadState::Invalidated)}});
 }
 
 void Lua::chromium::register_library(Lua::Interface &l) { register_wiweb_class(l); }

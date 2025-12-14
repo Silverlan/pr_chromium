@@ -7,7 +7,7 @@ import pragma.client;
 import pragma.iclient;
 
 #define PR_CHROMIUM_FIND_SYMBOL(lib, sym) (sym = lib.FindSymbolAddress<decltype(sym)>("pr_chromium_" #sym)) != nullptr
-cef::IChromiumWrapper::IChromiumWrapper(util::Library &lib)
+cef::IChromiumWrapper::IChromiumWrapper(pragma::util::Library &lib)
 {
 	m_bValid = PR_CHROMIUM_FIND_SYMBOL(lib, register_javascript_function) && PR_CHROMIUM_FIND_SYMBOL(lib, initialize) && PR_CHROMIUM_FIND_SYMBOL(lib, close) && PR_CHROMIUM_FIND_SYMBOL(lib, do_message_loop_work) && PR_CHROMIUM_FIND_SYMBOL(lib, parse_url)
 	  && PR_CHROMIUM_FIND_SYMBOL(lib, render_handler_create) && PR_CHROMIUM_FIND_SYMBOL(lib, render_handler_release) && PR_CHROMIUM_FIND_SYMBOL(lib, render_handler_set_user_data) && PR_CHROMIUM_FIND_SYMBOL(lib, render_handler_get_user_data)
@@ -26,7 +26,7 @@ cef::IChromiumWrapper::IChromiumWrapper(util::Library &lib)
 }
 
 static std::optional<bool> initResult = {};
-static std::shared_ptr<util::Library> g_libChromiumWrapper = nullptr;
+static std::shared_ptr<pragma::util::Library> g_libChromiumWrapper = nullptr;
 std::unique_ptr<cef::IChromiumWrapper> g_chromiumWrapper = nullptr;
 cef::IChromiumWrapper &cef::get_wrapper() { return *g_chromiumWrapper; }
 static bool initialize_chromium(std::string &outErr)
@@ -40,9 +40,9 @@ static bool initialize_chromium(std::string &outErr)
 	std::string err;
 
 #if _WIN32
-	auto lib = util::load_library_module("chromium/pr_chromium_wrapper", {}, {}, &err);
+	auto lib = pragma::util::load_library_module("chromium/pr_chromium_wrapper", {}, {}, &err);
 #else
-	auto lib = util::load_library_module("chromium/libpr_chromium_wrapper", {}, {}, &err);
+	auto lib = pragma::util::load_library_module("chromium/libpr_chromium_wrapper", {}, {}, &err);
 #endif
 	if(!lib) {
 		outErr = std::move(err);
@@ -56,24 +56,24 @@ static bool initialize_chromium(std::string &outErr)
 		return false;
 	}
 #if _WIN32
-	auto pathToSubProcess = util::FilePath("modules/chromium/pr_chromium_subprocess.exe");
+	auto pathToSubProcess = pragma::util::FilePath("modules/chromium/pr_chromium_subprocess.exe");
 #elif __linux__
-	auto pathToSubProcess = util::FilePath("modules/chromium/pr_chromium_subprocess");
+	auto pathToSubProcess = pragma::util::FilePath("modules/chromium/pr_chromium_subprocess");
 #endif
 
 	std::string absPathToSubProcess;
-	if(!filemanager::find_absolute_path(pathToSubProcess.GetString(), absPathToSubProcess)) {
+	if(!pragma::fs::find_absolute_path(pathToSubProcess.GetString(), absPathToSubProcess)) {
 		outErr = "Unable to locale path to pr_chromium_subprocess executable ('" + pathToSubProcess.GetString() + "')";
 		return false;
 	}
-	pathToSubProcess = util::FilePath(absPathToSubProcess);
+	pathToSubProcess = pragma::util::FilePath(absPathToSubProcess);
 
-	auto localPathToCache = util::Path::CreatePath("cache/chromium");
-	filemanager::create_path(localPathToCache.GetString());
-	auto pathToCache = util::Path::CreatePath(filemanager::get_program_write_path()) + localPathToCache;
+	auto localPathToCache = pragma::util::Path::CreatePath("cache/chromium");
+	pragma::fs::create_path(localPathToCache.GetString());
+	auto pathToCache = pragma::util::Path::CreatePath(pragma::fs::get_program_write_path()) + localPathToCache;
 
 	// CEF overrides our crash handlers. To circumvent that, we re-initialize ours after CEF has been initialized.
-	util::ScopeGuard reinitCrashHandler {[]() { pragma::debug::CrashHandler::Initialize(); }};
+	pragma::util::ScopeGuard reinitCrashHandler {[]() { pragma::debug::CrashHandler::Initialize(); }};
 
 	std::string initErr;
 	if(!g_chromiumWrapper->initialize(pathToSubProcess.GetString().c_str(), pathToCache.GetString().c_str(), pragma::get_cengine()->IsCPURenderingOnly(), initErr)) {
@@ -189,7 +189,7 @@ static void swap_red_blue(std::vector<unsigned char> &pixels,uint32_t w,uint32_t
 
 static bool save_tga(const std::string &fileName,uint32_t width,uint32_t height,const void *data)
 {
-	auto f = FileManager::OpenFile<VFilePtrReal>(fileName.c_str(),"wb");
+	auto f = FileManager::OpenFile<fs::VFilePtrReal>(fileName.c_str(),"wb");
 	if(f == nullptr)
 		return false;
 	uint32_t offset = 0;
@@ -261,7 +261,7 @@ static bool save_tga(const std::string &fileName,uint32_t width,uint32_t height,
 				auto val = 0.f;
 				auto *px = static_cast<const unsigned char*>(static_cast<const void*>(row));
 				memcpy(&val,px,byteSize);
-				val = umath::min(val *10000.f,255.f); // Vulkan TODO
+				val = pragma::math::min(val *10000.f,255.f); // Vulkan TODO
 				pixels[pos] = static_cast<unsigned char>(val);
 				pixels[pos +1] = static_cast<unsigned char>(val);
 				pixels[pos +2] = static_cast<unsigned char>(val);

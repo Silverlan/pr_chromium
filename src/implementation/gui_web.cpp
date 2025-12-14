@@ -15,7 +15,7 @@ import pragma.client;
 void pragma::gui::types::WIWeb::register_callbacks()
 {
 	Lua::gui::register_lua_callback("wiweb", "OnDownloadStarted", [](WIBase &el, lua::State *l, const std::function<void(const std::function<void()> &)> &callLuaFunc) -> CallbackHandle {
-		return FunctionCallback<void, uint32_t, util::Path>::Create([l, callLuaFunc](uint32_t id, util::Path path) {
+		return FunctionCallback<void, uint32_t, pragma::util::Path>::Create([l, callLuaFunc](uint32_t id, pragma::util::Path path) {
 			callLuaFunc([l, id, &path]() {
 				Lua::Push(l, id);
 				Lua::Push(l, path);
@@ -61,7 +61,7 @@ static std::vector<pragma::gui::types::WIWeb *> g_webElements {};
 static CallbackHandle g_preRecordGuiCb {};
 pragma::gui::types::WIWeb::WIWeb() : WITexturedRect()
 {
-	RegisterCallback<void, uint32_t, util::Path>("OnDownloadStarted");
+	RegisterCallback<void, uint32_t, pragma::util::Path>("OnDownloadStarted");
 	RegisterCallback<void, uint32_t, cef::IChromiumWrapper::DownloadState, int>("OnDownloadUpdate");
 	RegisterCallback<void, std::string>("OnAddressChanged");
 	RegisterCallback<void, int>("OnLoadEnd");
@@ -305,8 +305,8 @@ bool pragma::gui::types::WIWeb::InitializeChromiumBrowser()
 		  auto *el = static_cast<WIWeb *>(cef::get_wrapper().render_handler_get_user_data(renderHandler));
 		  w = el->m_browserViewSize.x; //el->GetWidth();
 		  h = el->m_browserViewSize.y; //el->GetHeight();
-		  w = umath::max(w, 1);
-		  h = umath::max(h, 1);
+		  w = pragma::math::max(w, 1);
+		  h = pragma::math::max(h, 1);
 
 		  if(el->m_texture) {
 			  auto extents = el->m_texture->GetImage().GetExtents();
@@ -355,18 +355,18 @@ bool pragma::gui::types::WIWeb::InitializeChromiumBrowser()
 
 	m_browser = std::shared_ptr<cef::CWebBrowser> {cef::get_wrapper().browser_create(m_browserClient.get(), m_initialUrl.c_str()), [](cef::CWebBrowser *browserClient) { cef::get_wrapper().browser_release(browserClient); }};
 
-	auto relPath = util::DirPath("cache/chromium/downloads/");
-	filemanager::create_path(relPath.GetString());
-	auto dlPath = util::DirPath(filemanager::get_program_write_path(), relPath);
+	auto relPath = pragma::util::DirPath("cache/chromium/downloads/");
+	fs::create_path(relPath.GetString());
+	auto dlPath = pragma::util::DirPath(fs::get_program_write_path(), relPath);
 	cef::get_wrapper().browser_client_set_download_location(m_browserClient.get(), dlPath.GetString().c_str());
 	cef::get_wrapper().browser_client_set_download_start_callback(m_browserClient.get(), [](cef::CWebBrowserClient *browserClient, uint32_t id, const char *fileName) {
-		auto relPath = util::Path::CreateFile(fileName);
-		if(!relPath.MakeRelative(util::Path::CreatePath(filemanager::get_program_write_path())))
+		auto relPath = pragma::util::Path::CreateFile(fileName);
+		if(!relPath.MakeRelative(pragma::util::Path::CreatePath(fs::get_program_write_path())))
 			return;
 		auto *el = static_cast<WIWeb *>(cef::get_wrapper().browser_client_get_user_data(browserClient));
 		if(!el)
 			return;
-		el->CallCallbacks<void, uint32_t, util::Path>("OnDownloadStarted", id, relPath);
+		el->CallCallbacks<void, uint32_t, pragma::util::Path>("OnDownloadStarted", id, relPath);
 	});
 	cef::get_wrapper().browser_client_set_download_update_callback(m_browserClient.get(), [](cef::CWebBrowserClient *browserClient, uint32_t id, cef::IChromiumWrapper::DownloadState state, int percentageComplete) {
 		auto *el = static_cast<WIWeb *>(cef::get_wrapper().browser_client_get_user_data(browserClient));
@@ -426,8 +426,8 @@ void pragma::gui::types::WIWeb::LoadURL(const std::string &url)
 
 void pragma::gui::types::WIWeb::SetBrowserViewSize(Vector2i size)
 {
-	size.x = umath::max(size.x, 1);
-	size.y = umath::max(size.y, 1);
+	size.x = pragma::math::max(size.x, 1);
+	size.y = pragma::math::max(size.y, 1);
 	m_browserViewSize = size;
 	if(GetBrowser())
 		cef::get_wrapper().browser_was_resized(GetBrowser());
@@ -588,38 +588,38 @@ void pragma::gui::types::WIWeb::OnCursorMoved(int x, int y)
 	auto brMousePos = GetBrowserMousePos();
 	cef::get_wrapper().browser_send_event_mouse_move(browser, brMousePos.x, brMousePos.y, !PosInBounds(x, y), m_buttonMods);
 }
-util::EventReply pragma::gui::types::WIWeb::OnDoubleClick()
+pragma::util::EventReply pragma::gui::types::WIWeb::OnDoubleClick()
 {
 	WIBase::OnDoubleClick();
 
 	auto *browser = GetBrowser();
 	if(browser == nullptr)
-		return util::EventReply::Unhandled;
+		return pragma::util::EventReply::Unhandled;
 	auto brMousePos = GetBrowserMousePos();
 	cef::get_wrapper().browser_send_event_mouse_click(browser, brMousePos.x, brMousePos.y, 'l', false, 2);
-	return util::EventReply::Handled;
+	return pragma::util::EventReply::Handled;
 }
-util::EventReply pragma::gui::types::WIWeb::MouseCallback(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods)
+pragma::util::EventReply pragma::gui::types::WIWeb::MouseCallback(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods)
 {
 	switch(button) {
 	case pragma::platform::MouseButton::Left:
-		umath::set_flag(m_buttonMods, cef::Modifier::LeftMouseButton, state == pragma::platform::KeyState::Press);
+		pragma::math::set_flag(m_buttonMods, cef::Modifier::LeftMouseButton, state == pragma::platform::KeyState::Press);
 		RequestFocus();
 		break;
 	case pragma::platform::MouseButton::Right:
-		umath::set_flag(m_buttonMods, cef::Modifier::RightMouseButton, state == pragma::platform::KeyState::Press);
+		pragma::math::set_flag(m_buttonMods, cef::Modifier::RightMouseButton, state == pragma::platform::KeyState::Press);
 		break;
 	case pragma::platform::MouseButton::Middle:
-		umath::set_flag(m_buttonMods, cef::Modifier::MiddleMouseButton, state == pragma::platform::KeyState::Press);
+		pragma::math::set_flag(m_buttonMods, cef::Modifier::MiddleMouseButton, state == pragma::platform::KeyState::Press);
 		break;
 	}
 
 	auto result = WIBase::MouseCallback(button, state, mods);
-	if(result == util::EventReply::Handled)
+	if(result == pragma::util::EventReply::Handled)
 		return result;
 	auto *browser = GetBrowser();
 	if(browser == nullptr || (state != pragma::platform::KeyState::Press && state != pragma::platform::KeyState::Release))
-		return util::EventReply::Unhandled;
+		return pragma::util::EventReply::Unhandled;
 	auto brMousePos = GetBrowserMousePos();
 	char btType;
 	switch(button) {
@@ -633,7 +633,7 @@ util::EventReply pragma::gui::types::WIWeb::MouseCallback(pragma::platform::Mous
 		btType = 'm';
 		break;
 	default:
-		return util::EventReply::Unhandled;
+		return pragma::util::EventReply::Unhandled;
 	}
 	cef::get_wrapper().browser_send_event_mouse_click(browser, brMousePos.x, brMousePos.y, btType, (state == pragma::platform::KeyState::Press) ? false : true, 1);
 
@@ -641,27 +641,27 @@ util::EventReply pragma::gui::types::WIWeb::MouseCallback(pragma::platform::Mous
 	//frame->ExecuteJavaScript("function test() {alert('ExecuteJavaScript works!');}",frame->GetURL(),0);
 
 	//frame->GetV8Context()->GetGlobal()->GetValue("test")->ExecuteFunction();
-	return util::EventReply::Handled;
+	return pragma::util::EventReply::Handled;
 }
 static cef::Modifier get_cef_modifiers(pragma::platform::Modifier mods)
 {
 	auto cefMods = cef::Modifier::None;
-	if(umath::is_flag_set(mods, pragma::platform::Modifier::Shift))
+	if(pragma::math::is_flag_set(mods, pragma::platform::Modifier::Shift))
 		cefMods |= cef::Modifier::ShiftDown;
-	if(umath::is_flag_set(mods, pragma::platform::Modifier::Alt))
+	if(pragma::math::is_flag_set(mods, pragma::platform::Modifier::Alt))
 		cefMods |= cef::Modifier::AltDown;
-	if(umath::is_flag_set(mods, pragma::platform::Modifier::Control))
+	if(pragma::math::is_flag_set(mods, pragma::platform::Modifier::Control))
 		cefMods |= cef::Modifier::ControlDown;
-	if(umath::is_flag_set(mods, pragma::platform::Modifier::Super))
+	if(pragma::math::is_flag_set(mods, pragma::platform::Modifier::Super))
 		cefMods |= cef::Modifier::CommandDown;
 	return cefMods;
 }
-util::EventReply pragma::gui::types::WIWeb::KeyboardCallback(pragma::platform::Key key, int scanCode, pragma::platform::KeyState state, pragma::platform::Modifier mods)
+pragma::util::EventReply pragma::gui::types::WIWeb::KeyboardCallback(pragma::platform::Key key, int scanCode, pragma::platform::KeyState state, pragma::platform::Modifier mods)
 {
 	WIBase::KeyboardCallback(key, scanCode, state, mods);
 	auto *browser = GetBrowser();
 	if(browser == nullptr)
-		return util::EventReply::Unhandled;
+		return pragma::util::EventReply::Unhandled;
 	int32_t systemKey = -1;
 	std::optional<char> c {};
 	switch(key) {
@@ -1094,15 +1094,15 @@ util::EventReply pragma::gui::types::WIWeb::KeyboardCallback(pragma::platform::K
 			if(systemKey == -1) {
 				if((mods & (pragma::platform::Modifier::Alt | pragma::platform::Modifier::Control | pragma::platform::Modifier::Super)) == pragma::platform::Modifier::None) {
 					// Already handled by CharCallback
-					return util::EventReply::Handled;
+					return pragma::util::EventReply::Handled;
 				}
 				// If alt, control or super keys are pressed, CharCallback won't get invoked, so we'll
 				// have to inform cef of the key event here instead.
-				c = std::tolower(umath::to_integral(key));
+				c = std::tolower(pragma::math::to_integral(key));
 				break;
 			}
 			else
-				return util::EventReply::Unhandled;
+				return pragma::util::EventReply::Unhandled;
 		}
 	}
 	auto press = (state == pragma::platform::KeyState::Press || state == pragma::platform::KeyState::Repeat);
@@ -1110,30 +1110,30 @@ util::EventReply pragma::gui::types::WIWeb::KeyboardCallback(pragma::platform::K
 	if(state == pragma::platform::KeyState::Repeat)
 		cefMods |= cef::Modifier::IsRepeat;
 	cef::get_wrapper().browser_send_event_key(browser, c.has_value() ? *c : systemKey, systemKey, scanCode, press, cefMods);
-	return util::EventReply::Handled;
+	return pragma::util::EventReply::Handled;
 }
-util::EventReply pragma::gui::types::WIWeb::CharCallback(unsigned int c, pragma::platform::Modifier mods)
+pragma::util::EventReply pragma::gui::types::WIWeb::CharCallback(unsigned int c, pragma::platform::Modifier mods)
 {
 	WIBase::CharCallback(c, mods);
 	auto *browser = GetBrowser();
 	if(browser == nullptr)
-		return util::EventReply::Unhandled;
+		return pragma::util::EventReply::Unhandled;
 	cef::get_wrapper().browser_send_event_char(browser, c, get_cef_modifiers(mods) | m_buttonMods);
-	return util::EventReply::Handled;
+	return pragma::util::EventReply::Handled;
 }
-util::EventReply pragma::gui::types::WIWeb::ScrollCallback(Vector2 offset, bool offsetAsPixels)
+pragma::util::EventReply pragma::gui::types::WIWeb::ScrollCallback(Vector2 offset, bool offsetAsPixels)
 {
 	WIBase::ScrollCallback(offset, offsetAsPixels);
 	auto *browser = GetBrowser();
 	if(browser == nullptr)
-		return util::EventReply::Unhandled;
+		return pragma::util::EventReply::Unhandled;
 	auto brMousePos = GetBrowserMousePos();
 	if(!offsetAsPixels)
 		offset *= 5.f;
 	else
 		offset /= 10.f;
 	cef::get_wrapper().browser_send_event_mouse_wheel(browser, brMousePos.x, brMousePos.y, offset.x, offset.y);
-	return util::EventReply::Handled;
+	return pragma::util::EventReply::Handled;
 }
 void pragma::gui::types::WIWeb::OnFocusGained()
 {

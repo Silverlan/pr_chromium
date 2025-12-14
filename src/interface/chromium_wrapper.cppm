@@ -34,7 +34,7 @@ export namespace cef {
 	struct IChromiumWrapper final {
 		enum class DownloadState : uint32_t { Downloading = 0, Cancelled, Complete, Invalidated };
 
-		IChromiumWrapper(util::Library &lib);
+		IChromiumWrapper(pragma::util::Library &lib);
 		IChromiumWrapper() = default;
 		void (*register_javascript_function)(const std::string &name, cef::JSValue *(*const fCallback)(cef::JSValue *, uint32_t)) = nullptr;
 		bool (*initialize)(const char *, const char *, bool, std::string &) = nullptr;
@@ -105,7 +105,7 @@ export namespace cef {
 		bool m_bValid = false;
 	};
 	IChromiumWrapper &get_wrapper();
-	using namespace umath::scoped_enum::bitwise;
+	using namespace pragma::math::scoped_enum::bitwise;
 };
 export {
 	REGISTER_ENUM_FLAGS(cef::Modifier)
