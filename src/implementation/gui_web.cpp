@@ -5,12 +5,20 @@ module;
 
 #if __linux__
 #include <linux/input-event-codes.h> //for key defines
+#else
+#include <Windows.h>
+#endif
+#ifdef WINDOWS_CLANG_COMPILER_FIX
+#include <chrono>
 #endif
 
 module pragma.modules.chromium;
 
 import :gui_web;
 import pragma.client;
+
+#undef CreateFile
+#undef max
 
 void pragma::gui::types::WIWeb::register_callbacks()
 {
