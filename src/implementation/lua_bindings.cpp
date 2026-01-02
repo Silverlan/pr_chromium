@@ -60,7 +60,11 @@ static void register_wiweb_class(Lua::Interface &l)
 		    },
 		    &t);
 		  if(!success)
+#ifdef WINDOWS_CLANG_COMPILER_FIX
+			  return luabind::object{};
+#else
 			  return Lua::nil;
+#endif
 		  return t;
 	  })];
 	Lua::RegisterLibraryEnums(l.GetState(), "chromium",
