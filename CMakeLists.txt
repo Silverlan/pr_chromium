@@ -8,12 +8,14 @@ pr_add_dependency(${PROJ_NAME} ishared TARGET PUBLIC)
 
 pr_init_module(${PROJ_NAME})
 
-add_subdirectory("external_libs/pr_chromium_wrapper")
-add_dependencies(${PROJ_NAME} pr_chromium_wrapper)
-add_dependencies(${PROJ_NAME} pr_chromium_subprocess)
+find_package(cef REQUIRED)
+find_package(chromium_wrapper REQUIRED)
+# add_subdirectory("external_libs/pr_chromium_wrapper")
+# add_dependencies(${PROJ_NAME} pr_chromium_wrapper)
+# add_dependencies(${PROJ_NAME} pr_chromium_subprocess)
 
 set_target_properties(pr_chromium PROPERTIES FOLDER modules/chromium)
-set_target_properties(pr_chromium_wrapper PROPERTIES FOLDER modules/chromium)
-set_target_properties(pr_chromium_subprocess PROPERTIES FOLDER modules/chromium)
+# set_target_properties(pr_chromium_wrapper PROPERTIES FOLDER modules/chromium)
+# set_target_properties(pr_chromium_subprocess PROPERTIES FOLDER modules/chromium)
 
 pr_finalize(${PROJ_NAME} FOLDER modules/chromium)
