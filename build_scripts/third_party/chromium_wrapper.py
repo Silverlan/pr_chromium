@@ -22,7 +22,7 @@ def main():
 	if not check_repository_commit(chromium_wrapper_root, commit_sha, "chromium_wrapper"):
 		if not Path(chromium_wrapper_root).is_dir():
 			print_msg("Chromium Wrapper not found. Downloading...")
-			git_clone("https://github.com/Silverlan/pr_chromium_wrapper.git", directory="chromium_wrapper", branch="feat/deps")
+			git_clone("https://github.com/Silverlan/pr_chromium_wrapper.git", directory="chromium_wrapper")
 		os.chdir("chromium_wrapper")
 		reset_to_commit(commit_sha)
 

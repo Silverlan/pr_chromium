@@ -4,10 +4,17 @@ if (${PCK}_FOUND)
   return()
 endif()
 
-find_file(${PCK}_RUNTIME
-  NAMES pr_chromium_wrapper.dll pr_chromium_wrapper.so
-  HINTS ${PRAGMA_DEPS_DIR}/chromium_wrapper/bin
-)
+if(WIN32)
+  find_file(${PCK}_RUNTIME
+    NAMES pr_chromium_wrapper.dll
+    HINTS ${PRAGMA_DEPS_DIR}/chromium_wrapper/bin
+  )
+else()
+  find_library(${PCK}_RUNTIME
+    NAMES pr_chromium_wrapper
+    HINTS ${PRAGMA_DEPS_DIR}/chromium_wrapper/lib
+  )
+endif()
 
 find_program(${PCK}_EXECUTABLE
   NAMES pr_chromium_subprocess.exe pr_chromium_subprocess

@@ -33,4 +33,8 @@ else:
 	staging_dir = get_staging_dir()
 	mkpath(staging_dir)
 	os.chdir(staging_dir)
-	install_prebuilt_binaries("https://github.com/Silverlan/pr_chromium_wrapper/releases/download/" +chromium_wrapper_release_tag +"/")
+	install_prebuilt_binaries(
+		"https://github.com/Silverlan/pr_chromium_wrapper/releases/download/" +chromium_wrapper_release_tag +"/",
+		version = chromium_wrapper_release_tag,
+		cacheDir = str(Path(staging_dir) / "chromium_wrapper")
+	)
