@@ -30,8 +30,7 @@ def main():
 
 	if platform == "linux":
 		import patch
-
-		patchData = patch.fromfile(moduleDir+"/build_scripts/patches/0001-fix-trivially-copyable-cef.patch")
+		patchData = patch.fromfile(str(Path(__file__).resolve().parent)+"/patches/0001-fix-trivially-copyable-cef.patch")
 		if patchData:
 			print_msg("Patching CEF...")
 			patchData.apply(1,cefRoot)
