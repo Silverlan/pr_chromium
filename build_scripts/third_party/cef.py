@@ -17,11 +17,13 @@ def main():
 		suffix = "windows64"
 
 	cefVer = "cef_binary_136.1.2+g4ff4593+chromium-136.0.7103.49"
-	cefRoot = deps_dir +"/"+cefVer+"_" +suffix
+	cefRoot = deps_dir +"/cef"
 	if not Path(cefRoot).is_dir():
 		print_msg("CEF not found. Downloading...")
 		tarName = "cef_binary_"+cefVer+"_" +suffix +".tar"
 		http_extract("https://cef-builds.spotifycdn.com/"+quote(cefVer)+"_" +suffix +".tar.bz2",tarName,"tar.bz2")
+		dir_name = cefVer+"_" +suffix
+		mv(dir_name, "cef")
 
 		if platform == "linux":
 			os.chdir(cefRoot+"/Release")
