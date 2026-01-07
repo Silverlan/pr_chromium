@@ -39,7 +39,7 @@ def main():
 			exe_name = "pr_chromium_subprocess"
 
 		copy_prebuilt_binaries(chromium_wrapper_root +"/build/" +build_config_tp +"/", "chromium_wrapper")
-		shutil.copy2(chromium_wrapper_root +"/build/subprocess/" +build_config_tp +"/" +exe_name, get_library_bin_dir("chromium_wrapper"))
+		shutil.copy2(chromium_wrapper_root +"/build/subprocess/" +build_config_tp +"/" +exe_name, str(Path(get_library_bin_dir("chromium_wrapper")) / exe_name))
 
 	return {
 		"buildDir": chromium_wrapper_root
