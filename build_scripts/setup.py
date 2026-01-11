@@ -36,5 +36,6 @@ else:
 	install_prebuilt_binaries(
 		"https://github.com/Silverlan/pr_chromium_wrapper/releases/download/" +chromium_wrapper_release_tag +"/",
 		version = chromium_wrapper_release_tag,
-		cacheDir = str(Path(staging_dir) / "chromium_wrapper")
+		cacheDir = str(Path(staging_dir) / "chromium_wrapper"),
+		toolset = "msvc" if (sys.platform == "win32") else "clang"
 	)
