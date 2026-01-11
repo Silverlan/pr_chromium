@@ -8,7 +8,7 @@ import shutil
 import subprocess
 import config
 
-chromium_wrapper_release_tag = "2026-01-07"
+chromium_wrapper_release_tag = "2026-01-11"
 
 parser = argparse.ArgumentParser(description='pr_chromium build script', allow_abbrev=False, formatter_class=argparse.ArgumentDefaultsHelpFormatter, epilog="")
 parser.add_argument("--build-chromium-wrapper", type=str2bool, nargs='?', const=True, default=False, help="Build the chromium wrapper library (otherwise uses pre-built binaries).")
