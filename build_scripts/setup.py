@@ -27,4 +27,4 @@ if build_chromium_wrapper:
 	chromium_wrapper_info = chromium_wrapper.main()
 else:
 	print_msg("Downloading prebuilt cycles binaries...")
-	subprocess.run(["cmake", "-DCMAKE_SOURCE_DIR=" +config.pragma_root, "-DPRAGMA_DEPS_DIR=" +config.prebuilt_bin_dir, "-P", "cmake/fetch_prebuilt_binaries.cmake"],check=True)
+	run_cmake_script(str(Path(moduleDir) / "cmake/fetch_prebuilt_binaries.cmake"))
