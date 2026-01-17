@@ -8,8 +8,6 @@ import shutil
 import subprocess
 import config
 
-chromium_wrapper_release_tag = "2026-01-11"
-
 parser = argparse.ArgumentParser(description='pr_chromium build script', allow_abbrev=False, formatter_class=argparse.ArgumentDefaultsHelpFormatter, epilog="")
 parser.add_argument("--build-chromium-wrapper", type=str2bool, nargs='?', const=True, default=False, help="Build the chromium wrapper library (otherwise uses pre-built binaries).")
 args,unknown = parser.parse_known_args()
@@ -29,13 +27,4 @@ if build_chromium_wrapper:
 	chromium_wrapper_info = chromium_wrapper.main()
 else:
 	print_msg("Downloading prebuilt cycles binaries...")
-
-	staging_dir = get_staging_dir()
-	mkpath(staging_dir)
-	os.chdir(staging_dir)
-	install_prebuilt_binaries(
-		"https://github.com/Silverlan/pr_chromium_wrapper/releases/download/" +chromium_wrapper_release_tag +"/",
-		version = chromium_wrapper_release_tag,
-		cacheDir = str(Path(staging_dir) / "chromium_wrapper"),
-		toolset = "msvc" if (sys.platform == "win32") else "clang"
-	)
+	subprocess.run(["cmake", "-DCMAKE_SOURCE_DIR=" +config.pragma_root, "-DPRAGMA_DEPS_DIR=" +config.prebuilt_bin_dir, "-P", "cmake/fetch_prebuilt_binaries.cmake"],check=True)

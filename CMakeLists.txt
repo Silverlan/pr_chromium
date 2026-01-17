@@ -1,5 +1,7 @@
 include(${CMAKE_SOURCE_DIR}/cmake/pr_common.cmake)
 
+include("cmake/fetch_prebuilt_binaries.cmake")
+
 set(PROJ_NAME pr_chromium)
 pr_add_module(${PROJ_NAME} SHARED "modules/chromium/")
 
