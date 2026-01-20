@@ -3,7 +3,7 @@ include(${CMAKE_SOURCE_DIR}/cmake/pr_common.cmake)
 include("cmake/fetch_prebuilt_binaries.cmake")
 
 set(PROJ_NAME pr_chromium)
-pr_add_module(${PROJ_NAME} SHARED "modules/chromium/")
+pr_add_module(${PROJ_NAME} "modules/chromium/")
 
 pr_add_dependency(${PROJ_NAME} iclient TARGET PUBLIC)
 pr_add_dependency(${PROJ_NAME} ishared TARGET PUBLIC)
