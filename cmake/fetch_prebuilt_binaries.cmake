@@ -8,4 +8,6 @@ if(WIN32)
     set(chromium_wrapper_toolset "msvc")
 endif()
 
-pr_fetch_prebuilt_binaries("${PRAGMA_DEPS_DIR}/chromium_wrapper" "${base_url}" "${version}" TOOLSET ${chromium_wrapper_toolset})
+if(NOT config.no_build_networking)
+    pr_fetch_prebuilt_binaries("${PRAGMA_DEPS_DIR}/chromium_wrapper" "${base_url}" "${version}" TOOLSET ${chromium_wrapper_toolset})
+endif()
