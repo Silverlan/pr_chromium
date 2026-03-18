@@ -16,7 +16,7 @@ def main():
 	else:
 		suffix = "windows64"
 
-	cefVer = "cef_binary_136.1.2+g4ff4593+chromium-136.0.7103.49"
+	cefVer = "cef_binary_145.0.28+g51162e8+chromium-145.0.7632.160"
 	cefRoot = deps_dir +"/cef"
 	if not Path(cefRoot).is_dir():
 		print_msg("CEF not found. Downloading...")
