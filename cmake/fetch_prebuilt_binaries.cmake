@@ -1,6 +1,6 @@
 include("${CMAKE_SOURCE_DIR}/cmake/install_helper.cmake")
 
-set(version "2026-06-29")
+set(version "2026-07-03")
 set(base_url "https://github.com/Silverlan/pr_chromium_wrapper/releases/download")
 set(chromium_wrapper_toolset)
 

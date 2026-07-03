@@ -17,7 +17,7 @@ def main():
 	chdir_mkdir(deps_dir)
 
 	os.chdir(deps_dir)
-	commit_sha = "f02f7c961651f9899ac6dc067f5dd68e8ac07012"
+	commit_sha = "0ed47301b039d2965747da89a1a547e8b2e11ee4"
 	chromium_wrapper_root = normalize_path(os.getcwd() +"/chromium_wrapper")
 	if not check_repository_commit(chromium_wrapper_root, commit_sha, "chromium_wrapper"):
 		if not Path(chromium_wrapper_root).is_dir():
