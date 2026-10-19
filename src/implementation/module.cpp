@@ -35,7 +35,7 @@ static bool initialize_chromium(std::string &outErr)
 		return *initResult;
 	initResult = false;
 
-	pragma::gui::WGUI::GetInstance().RegisterType<pragma::gui::types::WIWeb>("WIWeb");
+	pragma::get_cengine()->RegisterGuiType<pragma::gui::types::WIWeb>("WIWeb");
 
 	std::string err;
 
@@ -101,10 +101,6 @@ void PR_EXPORT pragma_initialize_lua(Lua::Interface &l)
 {
 	Lua::chromium::register_library(l);
 	pragma::gui::types::WIWeb::register_callbacks();
-
-	// GUI classes have to be registered for the client-state AND the GUI-state,
-	// so we have to tell the engine that we need to be registered for both whenever we're loaded.
-	iclient::load_as_gui_module();
 }
 };
 
